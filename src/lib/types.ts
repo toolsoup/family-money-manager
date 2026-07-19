@@ -6,6 +6,7 @@ export type AccountType =
   | 'investment'
   | 'vehicle'
   | 'property'
+  | 'line_of_credit'
   | 'other'
 
 export interface Account {
@@ -40,7 +41,7 @@ export type PayoffStrategyType =
   | 'minimum_only'
 
 export const ASSET_TYPES: AccountType[] = ['checking', 'savings', 'investment', 'vehicle', 'property']
-export const LIABILITY_TYPES: AccountType[] = ['credit_card', 'mortgage']
+export const LIABILITY_TYPES: AccountType[] = ['credit_card', 'mortgage', 'line_of_credit']
 
 export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
   checking: 'Checking',
@@ -50,6 +51,7 @@ export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
   investment: 'Investment',
   vehicle: 'Vehicle',
   property: 'Property',
+  line_of_credit: 'Line of Credit',
   other: 'Other',
 }
 
