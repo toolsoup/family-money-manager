@@ -1,9 +1,8 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
-import { useActionState } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { createAccount, updateAccount } from '@/app/dashboard/net-worth/actions'
-import { ACCOUNT_TYPE_LABELS, isAssetType, isLiabilityType } from '@/lib/types'
+import { ACCOUNT_TYPE_LABELS } from '@/lib/types'
 import type { Account, AccountType } from '@/lib/types'
 
 const ALL_TYPES = Object.keys(ACCOUNT_TYPE_LABELS) as AccountType[]
@@ -14,39 +13,44 @@ interface Props {
   onClose: () => void
 }
 
-async function handleSubmit(_prev: { success: boolean; error?: string }, formData: FormData) {
-  const id = formData.get('id')
-  if (id) {
-    return updateAccount(formData)
-  }
-  return createAccount(formData)
-}
-
 export function AccountFormDialog({ account, open, onClose }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
-  const [state, formAction, isPending] = useActionState(handleSubmit, { success: false })
+  const [error, setError] = useState<string | null>(null)
+  const [isPending, setIsPending] = useState(false)
 
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
     if (open) {
+      setError(null)
       dialog.showModal()
     } else {
       dialog.close()
     }
   }, [open])
 
-  useEffect(() => {
-    if (state.success) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsPending(true)
+    setError(null)
+
+    const formData = new FormData(e.currentTarget)
+    const result = formData.get('id')
+      ? await updateAccount(formData)
+      : await createAccount(formData)
+
+    setIsPending(false)
+
+    if (result.success) {
       formRef.current?.reset()
       onClose()
+    } else {
+      setError(result.error ?? 'Something went wrong')
     }
-  }, [state.success, onClose])
+  }
 
   const isEditing = !!account
-  const defaultType = account?.type ?? 'checking'
-  const showIsAsset = defaultType === 'other'
 
   return (
     <dialog
@@ -54,15 +58,15 @@ export function AccountFormDialog({ account, open, onClose }: Props) {
       onClose={onClose}
       className="bg-gray-900 border border-gray-700 rounded-xl p-0 w-full max-w-md backdrop:bg-black/60"
     >
-      <form ref={formRef} action={formAction} className="p-6">
+      <form ref={formRef} onSubmit={handleSubmit} className="p-6">
         <h2 className="text-xl font-bold text-white mb-6">
           {isEditing ? 'Edit Account' : 'Add Account'}
         </h2>
 
         {account && <input type="hidden" name="id" value={account.id} />}
 
-        {state.error && (
-          <p className="text-red-400 text-sm mb-4 bg-red-400/10 p-3 rounded-lg">{state.error}</p>
+        {error && (
+          <p className="text-red-400 text-sm mb-4 bg-red-400/10 p-3 rounded-lg">{error}</p>
         )}
 
         <div className="space-y-4">
@@ -84,7 +88,7 @@ export function AccountFormDialog({ account, open, onClose }: Props) {
             <select
               id="type"
               name="type"
-              defaultValue={defaultType}
+              defaultValue={account?.type ?? 'checking'}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
             >
               {ALL_TYPES.map((t) => (
@@ -129,22 +133,6 @@ export function AccountFormDialog({ account, open, onClose }: Props) {
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500 resize-none"
             />
           </div>
-
-          {/* Show is_asset toggle only for 'other' type — controlled via JS would be ideal,
-              but for simplicity we always render it hidden with defaults for known types */}
-          <input
-            type="hidden"
-            name="is_asset"
-            value={
-              account
-                ? String(account.is_asset)
-                : isAssetType(defaultType)
-                  ? 'true'
-                  : isLiabilityType(defaultType)
-                    ? 'false'
-                    : 'true'
-            }
-          />
         </div>
 
         <div className="flex gap-3 mt-6">

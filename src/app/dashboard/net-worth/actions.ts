@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { isAssetType, isLiabilityType } from '@/lib/types'
+import { isLiabilityType } from '@/lib/types'
 import type { AccountType } from '@/lib/types'
 
 export async function createAccount(formData: FormData) {
@@ -11,10 +11,7 @@ export async function createAccount(formData: FormData) {
   if (!user) return { success: false, error: 'Not authenticated' }
 
   const type = formData.get('type') as AccountType
-  const isAssetField = formData.get('is_asset')
-  let is_asset = isAssetType(type)
-  if (isLiabilityType(type)) is_asset = false
-  if (type === 'other') is_asset = isAssetField === 'true'
+  const is_asset = isLiabilityType(type) ? false : true
 
   const { error } = await supabase.from('accounts').insert({
     user_id: user.id,
@@ -40,10 +37,7 @@ export async function updateAccount(formData: FormData) {
 
   const id = formData.get('id') as string
   const type = formData.get('type') as AccountType
-  const isAssetField = formData.get('is_asset')
-  let is_asset = isAssetType(type)
-  if (isLiabilityType(type)) is_asset = false
-  if (type === 'other') is_asset = isAssetField === 'true'
+  const is_asset = isLiabilityType(type) ? false : true
 
   const { error } = await supabase
     .from('accounts')
