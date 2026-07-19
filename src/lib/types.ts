@@ -17,9 +17,27 @@ export interface Account {
   institution: string | null
   notes: string | null
   is_asset: boolean
+  interest_rate: number | null
+  minimum_payment: number | null
   created_at: string
   updated_at: string
 }
+
+export interface DebtAccount {
+  id: string
+  name: string
+  balance: number
+  interest_rate: number
+  minimum_payment: number
+}
+
+export type PayoffStrategyType =
+  | 'avalanche'
+  | 'snowball'
+  | 'hybrid'
+  | 'highest_payment'
+  | 'custom'
+  | 'minimum_only'
 
 export const ASSET_TYPES: AccountType[] = ['checking', 'savings', 'investment', 'vehicle', 'property']
 export const LIABILITY_TYPES: AccountType[] = ['credit_card', 'mortgage']

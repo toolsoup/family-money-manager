@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Account } from '@/lib/types'
+import type { Account, DebtAccount } from '@/lib/types'
 
 export async function getAccounts(): Promise<Account[]> {
   const supabase = await createClient()
@@ -17,7 +17,12 @@ export async function getAccounts(): Promise<Account[]> {
     return []
   }
 
-  return (data ?? []).map((a) => ({ ...a, balance: parseFloat(a.balance) }))
+  return (data ?? []).map((a) => ({
+    ...a,
+    balance: parseFloat(a.balance),
+    interest_rate: a.interest_rate != null ? parseFloat(a.interest_rate) : null,
+    minimum_payment: a.minimum_payment != null ? parseFloat(a.minimum_payment) : null,
+  }))
 }
 
 export async function getNetWorthSummary() {
@@ -37,4 +42,17 @@ export async function getNetWorthSummary() {
     netWorth: totalAssets - totalLiabilities,
     accountCount: accounts.length,
   }
+}
+
+export async function getDebtAccounts(): Promise<DebtAccount[]> {
+  const accounts = await getAccounts()
+  return accounts
+    .filter((a) => !a.is_asset && a.interest_rate != null && a.minimum_payment != null)
+    .map((a) => ({
+      id: a.id,
+      name: a.name,
+      balance: a.balance,
+      interest_rate: a.interest_rate!,
+      minimum_payment: a.minimum_payment!,
+    }))
 }

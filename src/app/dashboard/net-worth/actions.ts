@@ -13,6 +13,10 @@ export async function createAccount(formData: FormData) {
   const type = formData.get('type') as AccountType
   const is_asset = isLiabilityType(type) ? false : true
 
+  const isLiability = isLiabilityType(type)
+  const rateStr = formData.get('interest_rate') as string
+  const minPayStr = formData.get('minimum_payment') as string
+
   const { error } = await supabase.from('accounts').insert({
     user_id: user.id,
     name: formData.get('name') as string,
@@ -21,12 +25,15 @@ export async function createAccount(formData: FormData) {
     institution: (formData.get('institution') as string) || null,
     notes: (formData.get('notes') as string) || null,
     is_asset,
+    interest_rate: isLiability && rateStr ? parseFloat(rateStr) : null,
+    minimum_payment: isLiability && minPayStr ? parseFloat(minPayStr) : null,
   })
 
   if (error) return { success: false, error: error.message }
 
   revalidatePath('/dashboard/net-worth')
   revalidatePath('/dashboard')
+  revalidatePath('/dashboard/debt-destroyer')
   return { success: true }
 }
 
@@ -38,6 +45,9 @@ export async function updateAccount(formData: FormData) {
   const id = formData.get('id') as string
   const type = formData.get('type') as AccountType
   const is_asset = isLiabilityType(type) ? false : true
+  const isLiability = isLiabilityType(type)
+  const rateStr = formData.get('interest_rate') as string
+  const minPayStr = formData.get('minimum_payment') as string
 
   const { error } = await supabase
     .from('accounts')
@@ -48,6 +58,8 @@ export async function updateAccount(formData: FormData) {
       institution: (formData.get('institution') as string) || null,
       notes: (formData.get('notes') as string) || null,
       is_asset,
+      interest_rate: isLiability && rateStr ? parseFloat(rateStr) : null,
+      minimum_payment: isLiability && minPayStr ? parseFloat(minPayStr) : null,
     })
     .eq('id', id)
 
@@ -55,6 +67,7 @@ export async function updateAccount(formData: FormData) {
 
   revalidatePath('/dashboard/net-worth')
   revalidatePath('/dashboard')
+  revalidatePath('/dashboard/debt-destroyer')
   return { success: true }
 }
 
@@ -69,5 +82,6 @@ export async function deleteAccount(id: string) {
 
   revalidatePath('/dashboard/net-worth')
   revalidatePath('/dashboard')
+  revalidatePath('/dashboard/debt-destroyer')
   return { success: true }
 }

@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { deleteAccount } from '@/app/dashboard/net-worth/actions'
 import { AccountFormDialog } from '@/components/account-form-dialog'
 import { ACCOUNT_TYPE_LABELS } from '@/lib/types'
-import { formatCurrency } from '@/lib/format'
+import { formatCurrency, formatPercent } from '@/lib/format'
 import type { Account } from '@/lib/types'
 
 interface Props {
@@ -64,6 +64,12 @@ export function AccountList({ title, accounts, total, colorClass }: Props) {
                   <span className="text-gray-600 text-xs bg-gray-800 px-2 py-0.5 rounded">
                     {ACCOUNT_TYPE_LABELS[account.type]}
                   </span>
+                  {account.interest_rate != null && (
+                    <span className="text-gray-600 text-xs">{formatPercent(account.interest_rate)} APR</span>
+                  )}
+                  {account.minimum_payment != null && (
+                    <span className="text-gray-600 text-xs">{formatCurrency(account.minimum_payment)}/mo</span>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-4">

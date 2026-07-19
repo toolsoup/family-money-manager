@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react'
 import { createAccount, updateAccount } from '@/app/dashboard/net-worth/actions'
-import { ACCOUNT_TYPE_LABELS } from '@/lib/types'
+import { ACCOUNT_TYPE_LABELS, isLiabilityType } from '@/lib/types'
 import type { Account, AccountType } from '@/lib/types'
 
 const ALL_TYPES = Object.keys(ACCOUNT_TYPE_LABELS) as AccountType[]
@@ -18,6 +18,8 @@ export function AccountFormDialog({ account, open, onClose }: Props) {
   const formRef = useRef<HTMLFormElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const [selectedType, setSelectedType] = useState<AccountType>(account?.type ?? 'checking')
+  const showDebtFields = isLiabilityType(selectedType)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -89,6 +91,7 @@ export function AccountFormDialog({ account, open, onClose }: Props) {
               id="type"
               name="type"
               defaultValue={account?.type ?? 'checking'}
+              onChange={(e) => setSelectedType(e.target.value as AccountType)}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
             >
               {ALL_TYPES.map((t) => (
@@ -110,6 +113,37 @@ export function AccountFormDialog({ account, open, onClose }: Props) {
               placeholder="0.00"
             />
           </div>
+
+          {showDebtFields && (
+            <>
+              <div>
+                <label htmlFor="interest_rate" className="block text-sm text-gray-400 mb-1">Interest Rate (APR %)</label>
+                <input
+                  id="interest_rate"
+                  name="interest_rate"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  defaultValue={account?.interest_rate ?? ''}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                  placeholder="e.g. 24.99"
+                />
+              </div>
+              <div>
+                <label htmlFor="minimum_payment" className="block text-sm text-gray-400 mb-1">Minimum Monthly Payment</label>
+                <input
+                  id="minimum_payment"
+                  name="minimum_payment"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  defaultValue={account?.minimum_payment ?? ''}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                  placeholder="0.00"
+                />
+              </div>
+            </>
+          )}
 
           <div>
             <label htmlFor="institution" className="block text-sm text-gray-400 mb-1">Institution (optional)</label>
