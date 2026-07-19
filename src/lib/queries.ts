@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Account, DebtAccount } from '@/lib/types'
+import type { Account, DebtAccount, CashFlowEntry, SavingsGoal } from '@/lib/types'
 
 export async function getAccounts(): Promise<Account[]> {
   const supabase = await createClient()
@@ -55,4 +55,45 @@ export async function getDebtAccounts(): Promise<DebtAccount[]> {
       interest_rate: a.interest_rate!,
       minimum_payment: a.minimum_payment!,
     }))
+}
+
+export async function getCashFlowEntries(): Promise<CashFlowEntry[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await supabase
+    .from('cash_flow_entries')
+    .select('*')
+    .order('type')
+    .order('name')
+
+  if (error) {
+    console.error('Error fetching cash flow entries:', error)
+    return []
+  }
+
+  return (data ?? []).map((e) => ({ ...e, amount: parseFloat(e.amount) }))
+}
+
+export async function getSavingsGoals(): Promise<SavingsGoal[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await supabase
+    .from('savings_goals')
+    .select('*')
+    .order('deadline', { ascending: true, nullsFirst: false })
+
+  if (error) {
+    console.error('Error fetching savings goals:', error)
+    return []
+  }
+
+  return (data ?? []).map((g) => ({
+    ...g,
+    target_amount: parseFloat(g.target_amount),
+    current_amount: parseFloat(g.current_amount),
+  }))
 }

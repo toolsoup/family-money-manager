@@ -62,3 +62,44 @@ export function isAssetType(type: AccountType): boolean {
 export function isLiabilityType(type: AccountType): boolean {
   return LIABILITY_TYPES.includes(type)
 }
+
+// --- Cash Flow ---
+
+export type CashFlowType = 'income' | 'expense'
+export type CashFlowFrequency = 'weekly' | 'biweekly' | 'monthly' | 'annual'
+
+export const INCOME_CATEGORIES = ['Salary', 'Side Hustle', 'Rental Income', 'Investments', 'Other'] as const
+export const EXPENSE_CATEGORIES = ['Housing', 'Utilities', 'Insurance', 'Groceries', 'Transportation', 'Dining', 'Entertainment', 'Subscriptions', 'Healthcare', 'Education', 'Personal', 'Debt Payments', 'Savings', 'Other'] as const
+
+export const FREQUENCY_LABELS: Record<CashFlowFrequency, string> = {
+  weekly: 'Weekly',
+  biweekly: 'Bi-weekly',
+  monthly: 'Monthly',
+  annual: 'Annual',
+}
+
+export interface CashFlowEntry {
+  id: string
+  user_id: string
+  name: string
+  type: CashFlowType
+  category: string
+  amount: number
+  frequency: CashFlowFrequency
+  notes: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface SavingsGoal {
+  id: string
+  user_id: string
+  name: string
+  target_amount: number
+  current_amount: number
+  deadline: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
