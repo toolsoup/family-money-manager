@@ -11,14 +11,16 @@ interface Props {
   account?: Account | null
   open: boolean
   onClose: () => void
+  defaultType?: AccountType
 }
 
-export function AccountFormDialog({ account, open, onClose }: Props) {
+export function AccountFormDialog({ account, open, onClose, defaultType }: Props) {
+  const initialType = account?.type ?? defaultType ?? 'checking'
   const dialogRef = useRef<HTMLDialogElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
-  const [selectedType, setSelectedType] = useState<AccountType>(account?.type ?? 'checking')
+  const [selectedType, setSelectedType] = useState<AccountType>(initialType)
   const showDebtFields = isLiabilityType(selectedType)
 
   useEffect(() => {
@@ -90,7 +92,7 @@ export function AccountFormDialog({ account, open, onClose }: Props) {
             <select
               id="type"
               name="type"
-              defaultValue={account?.type ?? 'checking'}
+              defaultValue={initialType}
               onChange={(e) => setSelectedType(e.target.value as AccountType)}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
             >

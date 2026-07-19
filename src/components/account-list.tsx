@@ -5,16 +5,17 @@ import { deleteAccount } from '@/app/dashboard/net-worth/actions'
 import { AccountFormDialog } from '@/components/account-form-dialog'
 import { ACCOUNT_TYPE_LABELS } from '@/lib/types'
 import { formatCurrency, formatPercent } from '@/lib/format'
-import type { Account } from '@/lib/types'
+import type { Account, AccountType } from '@/lib/types'
 
 interface Props {
   title: string
   accounts: Account[]
   total: number
   colorClass: string
+  defaultType?: AccountType
 }
 
-export function AccountList({ title, accounts, total, colorClass }: Props) {
+export function AccountList({ title, accounts, total, colorClass, defaultType }: Props) {
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
   const [showAdd, setShowAdd] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -100,6 +101,7 @@ export function AccountList({ title, accounts, total, colorClass }: Props) {
       <AccountFormDialog
         open={showAdd}
         onClose={() => setShowAdd(false)}
+        defaultType={defaultType}
       />
 
       <AccountFormDialog

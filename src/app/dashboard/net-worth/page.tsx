@@ -40,12 +40,14 @@ export default async function NetWorthPage() {
           accounts={assets}
           total={totalAssets}
           colorClass="text-green-400"
+          defaultType="checking"
         />
         <AccountList
           title="Liabilities"
           accounts={liabilities}
           total={totalLiabilities}
           colorClass="text-red-400"
+          defaultType="credit_card"
         />
       </div>
     </div>
