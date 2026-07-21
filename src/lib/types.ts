@@ -103,3 +103,57 @@ export interface SavingsGoal {
   created_at: string
   updated_at: string
 }
+
+// --- Documents ---
+
+export type DocumentCategory =
+  | 'Closing Docs'
+  | 'Property Records'
+  | 'Loan Documents'
+  | 'Contracts/Leases'
+  | 'Appraisals'
+  | 'Tax Returns'
+  | 'Bank Statements'
+  | 'Insurance Policies'
+  | 'Pay Stubs'
+  | 'Investment Statements'
+  | 'Receipts'
+  | 'Legal'
+  | 'Other'
+
+export const DOCUMENT_CATEGORIES = [
+  'Closing Docs',
+  'Property Records',
+  'Loan Documents',
+  'Contracts/Leases',
+  'Appraisals',
+  'Tax Returns',
+  'Bank Statements',
+  'Insurance Policies',
+  'Pay Stubs',
+  'Investment Statements',
+  'Receipts',
+  'Legal',
+  'Other',
+] as const
+
+export const DOCUMENT_CATEGORY_GROUPS: Record<string, readonly DocumentCategory[]> = {
+  'Real Estate': ['Closing Docs', 'Property Records', 'Loan Documents', 'Contracts/Leases', 'Appraisals'],
+  'Personal Finance': ['Tax Returns', 'Bank Statements', 'Insurance Policies', 'Pay Stubs', 'Investment Statements', 'Receipts'],
+  'General': ['Legal', 'Other'],
+}
+
+export interface Document {
+  id: string
+  user_id: string
+  name: string
+  category: DocumentCategory
+  file_name: string
+  file_path: string
+  file_size: number
+  file_type: string
+  notes: string | null
+  tags: string[] | null
+  uploaded_at: string
+  updated_at: string
+}
