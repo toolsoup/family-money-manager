@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Account, DebtAccount, CashFlowEntry, SavingsGoal, Document, FinancialGoal } from '@/lib/types'
+import type { Account, DebtAccount, CashFlowEntry, SavingsGoal, Document, FinancialGoal, PlaidItem, PlaidAccount, UserPreferences } from '@/lib/types'
 
 export async function getAccounts(): Promise<Account[]> {
   const supabase = await createClient()
@@ -139,5 +139,64 @@ export async function getFinancialGoals(): Promise<FinancialGoal[]> {
     ...g,
     target_value: parseFloat(g.target_value),
     current_value: parseFloat(g.current_value),
+  }))
+}
+
+export async function getUserPreferences(): Promise<UserPreferences> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { default_timeframe: 5 }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('default_timeframe')
+    .eq('id', user.id)
+    .single()
+
+  if (error) {
+    console.error('Error fetching preferences:', error)
+    return { default_timeframe: 5 }
+  }
+
+  return { default_timeframe: data?.default_timeframe ?? 5 }
+}
+
+export async function getPlaidItems(): Promise<PlaidItem[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await supabase
+    .from('plaid_items')
+    .select('id, user_id, plaid_item_id, institution_id, institution_name, status, last_synced_at, created_at, updated_at')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching plaid items:', error)
+    return []
+  }
+
+  return data ?? []
+}
+
+export async function getPlaidAccounts(): Promise<PlaidAccount[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await supabase
+    .from('plaid_accounts')
+    .select('*')
+    .order('name')
+
+  if (error) {
+    console.error('Error fetching plaid accounts:', error)
+    return []
+  }
+
+  return (data ?? []).map((a) => ({
+    ...a,
+    balance_current: a.balance_current != null ? parseFloat(a.balance_current) : null,
+    balance_available: a.balance_available != null ? parseFloat(a.balance_available) : null,
   }))
 }

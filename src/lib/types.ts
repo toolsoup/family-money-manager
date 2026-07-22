@@ -186,3 +186,38 @@ export interface FinancialGoal {
   created_at: string
   updated_at: string
 }
+
+// --- Settings & Plaid ---
+
+export interface UserPreferences {
+  default_timeframe: number
+}
+
+export interface PlaidItem {
+  id: string
+  user_id: string
+  plaid_item_id: string
+  institution_id: string | null
+  institution_name: string | null
+  status: string
+  last_synced_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PlaidAccount {
+  id: string
+  user_id: string
+  plaid_item_id: string
+  plaid_account_id: string
+  name: string
+  official_name: string | null
+  type: string
+  subtype: string | null
+  balance_current: number | null
+  balance_available: number | null
+  currency_code: string
+  last_synced_at: string | null
+  created_at: string
+  updated_at: string
+}
