@@ -43,13 +43,23 @@
 - [x] View/download via signed URLs
 - [x] Edit metadata and delete (file + row)
 
+### Phase 5: Planning and Projections
+- [x] `financial_goals` table with RLS
+- [x] Net worth growth projection (AreaChart)
+- [x] Debt payoff timeline projection (AreaChart, avalanche strategy)
+- [x] Savings goal projections (LineChart, surplus split equally)
+- [x] User-selectable timeframe (1, 3, 5, 10 years)
+- [x] Financial goals with CRUD (Net Worth, Debt Freedom, Savings, Custom categories)
+- [x] Auto-calculated milestones at 25/50/75/100% with projected dates
+- [x] Progress bars with milestone markers
+- [x] 4 stat cards (Current Net Worth, Debt-Free Date, Monthly Surplus, Active Goals)
+
 ## Current Phase
 
-**Phase 5** — Planning and projections.
+**Phase 6** — Plaid sandbox sync.
 
 ## Upcoming Phases
 
-- **Phase 5:** Planning and projections
 - **Phase 6:** Plaid sandbox sync
 - **Phase 7:** Productization hardening
 
