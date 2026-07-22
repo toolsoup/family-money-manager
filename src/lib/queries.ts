@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Account, DebtAccount, CashFlowEntry, SavingsGoal, Document } from '@/lib/types'
+import type { Account, DebtAccount, CashFlowEntry, SavingsGoal, Document, FinancialGoal } from '@/lib/types'
 
 export async function getAccounts(): Promise<Account[]> {
   const supabase = await createClient()
@@ -117,5 +117,27 @@ export async function getDocuments(): Promise<Document[]> {
     ...d,
     file_size: Number(d.file_size),
     tags: d.tags ?? null,
+  }))
+}
+
+export async function getFinancialGoals(): Promise<FinancialGoal[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await supabase
+    .from('financial_goals')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching financial goals:', error)
+    return []
+  }
+
+  return (data ?? []).map((g) => ({
+    ...g,
+    target_value: parseFloat(g.target_value),
+    current_value: parseFloat(g.current_value),
   }))
 }

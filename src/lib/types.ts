@@ -157,3 +157,32 @@ export interface Document {
   uploaded_at: string
   updated_at: string
 }
+
+// --- Planning & Goals ---
+
+export type GoalCategory = 'net_worth' | 'debt_freedom' | 'savings' | 'custom'
+export type ProjectionTimeframe = 1 | 3 | 5 | 10
+
+export const GOAL_CATEGORIES = ['net_worth', 'debt_freedom', 'savings', 'custom'] as const
+
+export const GOAL_CATEGORY_LABELS: Record<GoalCategory, string> = {
+  net_worth: 'Net Worth',
+  debt_freedom: 'Debt Freedom',
+  savings: 'Savings',
+  custom: 'Custom',
+}
+
+export const PROJECTION_TIMEFRAMES: ProjectionTimeframe[] = [1, 3, 5, 10]
+
+export interface FinancialGoal {
+  id: string
+  user_id: string
+  name: string
+  category: GoalCategory
+  target_value: number
+  current_value: number
+  target_date: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
