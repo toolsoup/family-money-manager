@@ -54,13 +54,24 @@
 - [x] Progress bars with milestone markers
 - [x] 4 stat cards (Current Net Worth, Debt-Free Date, Monthly Surplus, Active Goals)
 
+### Phase 6: Plaid Sandbox + Settings
+- [x] `plaid_items` and `plaid_accounts` tables with RLS
+- [x] `default_timeframe` preference column on profiles
+- [x] Plaid SDK integration (`plaid` + `react-plaid-link`)
+- [x] API routes for link token creation and public token exchange
+- [x] Account balance sync on connection
+- [x] Settings page with Google profile display (name, email, avatar)
+- [x] Default projection timeframe preference
+- [x] Connected Accounts section with institution list and disconnect
+- [x] Graceful fallback when Plaid keys not configured
+- [x] Sign Out button on Settings page
+
 ## Current Phase
 
-**Phase 6** — Plaid sandbox sync.
+**Phase 7** — Productization hardening.
 
 ## Upcoming Phases
 
-- **Phase 6:** Plaid sandbox sync
 - **Phase 7:** Productization hardening
 
 ## Key References
