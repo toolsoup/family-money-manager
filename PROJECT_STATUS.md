@@ -66,13 +66,23 @@
 - [x] Graceful fallback when Plaid keys not configured
 - [x] Sign Out button on Settings page
 
-## Current Phase
+### Phase 7: Productization Hardening
+- [x] Toast notification system (sonner) across all 17 mutations
+- [x] Success toasts on create/update/delete in all form dialogs and list components
+- [x] Error toasts on failed deletes (previously silently ignored)
+- [x] Replaced browser `alert()` and button state hacks with proper toasts
+- [x] Enhanced Dashboard with complete financial overview:
+  - 4 stat cards (Net Worth, Monthly Surplus, Total Debt, Active Goals)
+  - 12-month net worth projection AreaChart
+  - Cash Flow summary with top expenses
+  - Debt snapshot with debt-free date and interest savings
+  - Savings goals progress bars (top 3)
+  - Recent documents (last 3)
+  - Quick Actions row linking to all features
 
-**Phase 7** — Productization hardening.
+## Status
 
-## Upcoming Phases
-
-- **Phase 7:** Productization hardening
+All phases complete. The app is fully functional with all 7 sidebar pages built and deployed.
 
 ## Key References
 
