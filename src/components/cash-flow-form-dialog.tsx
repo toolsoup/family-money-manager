@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { createCashFlowEntry, updateCashFlowEntry } from '@/app/dashboard/cash-flow/actions'
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES, FREQUENCY_LABELS } from '@/lib/types'
 import type { CashFlowEntry, CashFlowType, CashFlowFrequency } from '@/lib/types'
@@ -47,6 +48,7 @@ export function CashFlowFormDialog({ entry, open, onClose, defaultType = 'income
 
     setIsPending(false)
     if (result.success) {
+      toast.success(formData.get('id') ? 'Entry saved' : 'Entry added')
       formRef.current?.reset()
       onClose()
     } else {

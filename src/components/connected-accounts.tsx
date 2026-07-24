@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { disconnectPlaidItem } from '@/app/dashboard/settings/actions'
 import { PlaidLinkButton } from '@/components/plaid-link-button'
 import { formatCurrency } from '@/lib/format'
@@ -20,7 +21,12 @@ export function ConnectedAccounts({ items, accounts, isPlaidConfigured }: Props)
     if (!confirm(`Disconnect ${name ?? 'this institution'}? All synced accounts will be removed.`)) return
     setDeletingId(itemId)
     startTransition(async () => {
-      await disconnectPlaidItem(itemId)
+      const result = await disconnectPlaidItem(itemId)
+      if (result.success) {
+        toast.success('Account disconnected')
+      } else {
+        toast.error(result.error ?? 'Failed to disconnect')
+      }
       setDeletingId(null)
     })
   }

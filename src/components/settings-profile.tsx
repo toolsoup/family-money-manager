@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { updatePreferences } from '@/app/dashboard/settings/actions'
 import { PROJECTION_TIMEFRAMES } from '@/lib/types'
@@ -16,21 +17,20 @@ interface Props {
 
 export function SettingsProfile({ email, fullName, avatarUrl, preferences }: Props) {
   const [isPending, setIsPending] = useState(false)
-  const [saved, setSaved] = useState(false)
   const router = useRouter()
 
   async function handleSavePreferences(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsPending(true)
-    setSaved(false)
 
     const formData = new FormData(e.currentTarget)
     const result = await updatePreferences(formData)
 
     setIsPending(false)
     if (result.success) {
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
+      toast.success('Preferences saved')
+    } else {
+      toast.error(result.error ?? 'Failed to save preferences')
     }
   }
 
@@ -89,7 +89,7 @@ export function SettingsProfile({ email, fullName, avatarUrl, preferences }: Pro
             disabled={isPending}
             className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer"
           >
-            {isPending ? 'Saving...' : saved ? 'Saved!' : 'Save Preferences'}
+            {isPending ? 'Saving...' : 'Save Preferences'}
           </button>
         </form>
       </div>

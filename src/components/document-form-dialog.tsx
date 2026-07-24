@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { createDocument, updateDocument } from '@/app/dashboard/documents/actions'
 import { DOCUMENT_CATEGORY_GROUPS } from '@/lib/types'
@@ -41,6 +42,7 @@ export function DocumentFormDialog({ document: doc, open, onClose }: Props) {
         const result = await updateDocument(formData)
         setIsPending(false)
         if (result.success) {
+          toast.success('Document updated')
           formRef.current?.reset()
           onClose()
         } else {
@@ -95,6 +97,7 @@ export function DocumentFormDialog({ document: doc, open, onClose }: Props) {
         setIsPending(false)
 
         if (result.success) {
+          toast.success('Document uploaded')
           formRef.current?.reset()
           onClose()
         } else {

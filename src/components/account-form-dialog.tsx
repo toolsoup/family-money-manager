@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { createAccount, updateAccount } from '@/app/dashboard/net-worth/actions'
 import { ACCOUNT_TYPE_LABELS, isLiabilityType } from '@/lib/types'
 import type { Account, AccountType } from '@/lib/types'
@@ -47,6 +48,7 @@ export function AccountFormDialog({ account, open, onClose, defaultType }: Props
     setIsPending(false)
 
     if (result.success) {
+      toast.success(formData.get('id') ? 'Account saved' : 'Account added')
       formRef.current?.reset()
       onClose()
     } else {

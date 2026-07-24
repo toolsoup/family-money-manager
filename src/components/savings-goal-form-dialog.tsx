@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { createSavingsGoal, updateSavingsGoal } from '@/app/dashboard/cash-flow/actions'
 import type { SavingsGoal } from '@/lib/types'
 
@@ -39,6 +40,7 @@ export function SavingsGoalFormDialog({ goal, open, onClose }: Props) {
 
     setIsPending(false)
     if (result.success) {
+      toast.success(formData.get('id') ? 'Goal saved' : 'Goal added')
       formRef.current?.reset()
       onClose()
     } else {

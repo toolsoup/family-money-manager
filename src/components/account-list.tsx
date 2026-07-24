@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { deleteAccount } from '@/app/dashboard/net-worth/actions'
 import { AccountFormDialog } from '@/components/account-form-dialog'
 import { ACCOUNT_TYPE_LABELS } from '@/lib/types'
@@ -25,7 +26,12 @@ export function AccountList({ title, accounts, total, colorClass, defaultType }:
     if (!confirm('Delete this account?')) return
     setDeletingId(id)
     startTransition(async () => {
-      await deleteAccount(id)
+      const result = await deleteAccount(id)
+      if (result.success) {
+        toast.success('Account deleted')
+      } else {
+        toast.error(result.error ?? 'Failed to delete account')
+      }
       setDeletingId(null)
     })
   }

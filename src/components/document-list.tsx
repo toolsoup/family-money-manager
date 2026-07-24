@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { deleteDocument, getSignedUrl } from '@/app/dashboard/documents/actions'
 import { DocumentFormDialog } from '@/components/document-form-dialog'
 import { formatFileSize } from '@/lib/format'
@@ -27,7 +28,12 @@ export function DocumentList({ documents }: Props) {
     if (!confirm('Delete this document and its file?')) return
     setDeletingId(doc.id)
     startTransition(async () => {
-      await deleteDocument(doc.id, doc.file_path)
+      const result = await deleteDocument(doc.id, doc.file_path)
+      if (result.success) {
+        toast.success('Document deleted')
+      } else {
+        toast.error(result.error ?? 'Failed to delete document')
+      }
       setDeletingId(null)
     })
   }
@@ -39,7 +45,7 @@ export function DocumentList({ documents }: Props) {
     if (url) {
       window.open(url, '_blank')
     } else {
-      alert(error ?? 'Could not generate link')
+      toast.error(error ?? 'Could not generate link')
     }
   }
 

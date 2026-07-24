@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { deleteCashFlowEntry } from '@/app/dashboard/cash-flow/actions'
 import { CashFlowFormDialog } from '@/components/cash-flow-form-dialog'
 import { FREQUENCY_LABELS } from '@/lib/types'
@@ -26,7 +27,12 @@ export function CashFlowList({ title, entries, monthlyTotal, colorClass, default
     if (!confirm('Delete this entry?')) return
     setDeletingId(id)
     startTransition(async () => {
-      await deleteCashFlowEntry(id)
+      const result = await deleteCashFlowEntry(id)
+      if (result.success) {
+        toast.success('Entry deleted')
+      } else {
+        toast.error(result.error ?? 'Failed to delete entry')
+      }
       setDeletingId(null)
     })
   }

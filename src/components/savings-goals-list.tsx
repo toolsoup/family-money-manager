@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { deleteSavingsGoal } from '@/app/dashboard/cash-flow/actions'
 import { SavingsGoalFormDialog } from '@/components/savings-goal-form-dialog'
 import { formatCurrency } from '@/lib/format'
@@ -21,7 +22,12 @@ export function SavingsGoalsList({ goals, monthlySurplus }: Props) {
     if (!confirm('Delete this goal?')) return
     setDeletingId(id)
     startTransition(async () => {
-      await deleteSavingsGoal(id)
+      const result = await deleteSavingsGoal(id)
+      if (result.success) {
+        toast.success('Goal deleted')
+      } else {
+        toast.error(result.error ?? 'Failed to delete goal')
+      }
       setDeletingId(null)
     })
   }

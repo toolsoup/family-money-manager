@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { deleteGoal } from '@/app/dashboard/planning/actions'
 import { GoalFormDialog } from '@/components/goal-form-dialog'
 import { formatCurrency } from '@/lib/format'
@@ -23,7 +24,12 @@ export function GoalList({ goals, monthlySurplus }: Props) {
     if (!confirm('Delete this goal?')) return
     setDeletingId(id)
     startTransition(async () => {
-      await deleteGoal(id)
+      const result = await deleteGoal(id)
+      if (result.success) {
+        toast.success('Goal deleted')
+      } else {
+        toast.error(result.error ?? 'Failed to delete goal')
+      }
       setDeletingId(null)
     })
   }

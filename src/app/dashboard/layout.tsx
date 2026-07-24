@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/sidebar'
+import { Toaster } from 'sonner'
 
 export default async function DashboardLayout({
   children,
@@ -20,6 +21,13 @@ export default async function DashboardLayout({
       <main className="flex-1 p-8 overflow-auto">
         {children}
       </main>
+      <Toaster
+        theme="dark"
+        position="bottom-right"
+        toastOptions={{
+          style: { background: '#1f2937', border: '1px solid #374151', color: '#fff' },
+        }}
+      />
     </div>
   )
 }
