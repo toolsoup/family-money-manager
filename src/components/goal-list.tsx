@@ -35,21 +35,21 @@ export function GoalList({ goals, monthlySurplus }: Props) {
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl">
-      <div className="flex items-center justify-between p-6 border-b border-gray-800">
-        <h2 className="text-lg font-semibold text-white">Financial Goals</h2>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer"
-        >
-          + Add Goal
+    <div>
+      <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-4)' }}>
+        <h3 style={{ margin: 0 }}>Financial Goals</h3>
+        <button onClick={() => setShowAdd(true)} className="btn btn-primary" type="button">
+          <svg viewBox="0 0 256 256" width="16" height="16" fill="currentColor" aria-hidden="true">
+            <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z" />
+          </svg>
+          Add Goal
         </button>
       </div>
 
       {goals.length === 0 ? (
-        <p className="p-6 text-gray-500 text-sm">No goals yet. Click + Add Goal to set your first financial target.</p>
+        <p className="text-muted">No goals yet. Add your first financial target to start tracking progress.</p>
       ) : (
-        <div className="divide-y divide-gray-800">
+        <div className="flex flex-col" style={{ gap: 'var(--space-4)' }}>
           {goals.map((goal) => {
             const progress = goal.target_value > 0
               ? Math.min(100, (goal.current_value / goal.target_value) * 100)
@@ -61,72 +61,67 @@ export function GoalList({ goals, monthlySurplus }: Props) {
             return (
               <div
                 key={goal.id}
-                className={`p-6 ${deletingId === goal.id ? 'opacity-50' : ''}`}
+                className="card"
+                style={{ opacity: deletingId === goal.id ? 0.5 : 1 }}
               >
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start justify-between" style={{ gap: 'var(--space-3)' }}>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-white font-medium text-sm">{goal.name}</h3>
-                      <span className="text-gray-500 text-xs bg-gray-800 px-2 py-0.5 rounded">
+                    <div className="flex items-center" style={{ gap: '8px', flexWrap: 'wrap' }}>
+                      <span className="card-title">{goal.name}</span>
+                      <span className="tag tag-neutral">
                         {GOAL_CATEGORY_LABELS[goal.category as GoalCategory] ?? goal.category}
                       </span>
-                      {isComplete && (
-                        <span className="text-green-400 text-xs bg-green-400/10 px-2 py-0.5 rounded">
-                          Complete
-                        </span>
-                      )}
+                      {isComplete && <span className="tag tag-accent">Complete</span>}
                     </div>
-                    <p className="text-gray-500 text-xs mt-0.5">
+                    <p className="text-muted tnum" style={{ margin: '4px 0 0', fontSize: '13px' }}>
                       {formatCurrency(goal.current_value)} of {formatCurrency(goal.target_value)}
                       {goal.target_date && ` · Target: ${new Date(goal.target_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`}
                     </p>
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex" style={{ gap: '4px', flex: 'none' }}>
                     <button
                       onClick={() => setEditingGoal(goal)}
-                      className="text-gray-500 hover:text-white text-xs px-2 py-1 rounded hover:bg-gray-800 transition-colors cursor-pointer"
+                      className="btn btn-ghost"
+                      type="button"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(goal.id)}
                       disabled={isPending}
-                      className="text-gray-500 hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-gray-800 transition-colors cursor-pointer"
+                      className="btn btn-danger"
+                      type="button"
                     >
                       Delete
                     </button>
                   </div>
                 </div>
 
-                {/* Progress bar */}
-                <div className="relative h-3 bg-gray-800 rounded-full overflow-hidden mb-3">
-                  <div
-                    className={`absolute inset-y-0 left-0 rounded-full transition-all ${
-                      isComplete ? 'bg-green-500' : 'bg-blue-500'
-                    }`}
-                    style={{ width: `${progress}%` }}
-                  />
-                  {/* Milestone markers */}
+                {/* Progress bar with milestone markers */}
+                <div className="meter" style={{ position: 'relative' }}>
+                  <i style={{ width: `${progress}%` }} />
                   {[25, 50, 75].map((pct) => (
-                    <div
+                    <span
                       key={pct}
-                      className="absolute top-0 bottom-0 w-px bg-gray-600"
-                      style={{ left: `${pct}%` }}
+                      style={{
+                        position: 'absolute', top: 0, bottom: 0, width: '1px',
+                        left: `${pct}%`, background: 'var(--color-neutral-400)',
+                      }}
                     />
                   ))}
                 </div>
 
                 {/* Milestones */}
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4" style={{ gap: 'var(--space-2)' }}>
                   {milestones.map((m) => (
-                    <div key={m.percent} className="text-center">
-                      <p className={`text-xs font-medium ${m.reached ? 'text-green-400' : 'text-gray-500'}`}>
+                    <div key={m.percent} className="text-center tnum">
+                      <p className={m.reached ? 'amt-pos' : 'text-muted'} style={{ margin: 0, fontSize: '13px' }}>
                         {m.percent}%
                       </p>
-                      <p className="text-[10px] text-gray-600">
+                      <p className="text-muted" style={{ margin: 0, fontSize: '11px' }}>
                         {formatCurrency(m.value)}
                       </p>
-                      <p className={`text-[10px] ${m.reached ? 'text-green-400' : 'text-gray-500'}`}>
+                      <p className={m.reached ? 'amt-pos' : 'text-muted'} style={{ margin: 0, fontSize: '11px' }}>
                         {m.projectedDate ?? '—'}
                       </p>
                     </div>

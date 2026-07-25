@@ -13,15 +13,16 @@ interface Props {
   title: string
   entries: CashFlowEntry[]
   monthlyTotal: number
-  colorClass: string
   defaultType: CashFlowType
 }
 
-export function CashFlowList({ title, entries, monthlyTotal, colorClass, defaultType }: Props) {
+export function CashFlowList({ title, entries, monthlyTotal, defaultType }: Props) {
   const [editingEntry, setEditingEntry] = useState<CashFlowEntry | null>(null)
   const [showAdd, setShowAdd] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  const isIncome = defaultType === 'income'
 
   function handleDelete(id: string) {
     if (!confirm('Delete this entry?')) return
@@ -38,65 +39,64 @@ export function CashFlowList({ title, entries, monthlyTotal, colorClass, default
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl">
-      <div className="flex items-center justify-between p-6 border-b border-gray-800">
+    <section>
+      <div className="flex items-end justify-between" style={{ marginBottom: 'var(--space-3)' }}>
         <div>
-          <h2 className="text-lg font-semibold text-white">{title}</h2>
-          <p className={`text-2xl font-bold mt-1 ${colorClass}`}>{formatCurrency(monthlyTotal)}/mo</p>
+          <h3 style={{ margin: 0 }}>{title}</h3>
+          <p
+            className={`tnum ${isIncome ? 'amt-pos' : ''}`}
+            style={{ margin: '2px 0 0', fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '25px' }}
+          >
+            {formatCurrency(monthlyTotal)}/mo
+          </p>
         </div>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer"
-        >
+        <button onClick={() => setShowAdd(true)} className="btn btn-secondary" type="button">
           + Add
         </button>
       </div>
 
       {entries.length === 0 ? (
-        <p className="p-6 text-gray-500 text-sm">No entries yet. Click + Add to get started.</p>
+        <p className="text-muted" style={{ fontSize: '14px' }}>No entries yet. Click + Add to get started.</p>
       ) : (
-        <div className="divide-y divide-gray-800">
-          {entries.map((entry) => (
-            <div
-              key={entry.id}
-              className={`flex items-center justify-between p-4 px-6 ${
-                deletingId === entry.id ? 'opacity-50' : ''
-              }`}
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium truncate">{entry.name}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-gray-600 text-xs bg-gray-800 px-2 py-0.5 rounded">
-                    {entry.category}
-                  </span>
-                  <span className="text-gray-600 text-xs">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>What</th>
+              <th>Category</th>
+              <th style={{ textAlign: 'right' }}>Per month</th>
+              <th aria-label="Actions" />
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((entry) => (
+              <tr key={entry.id} style={{ opacity: deletingId === entry.id ? 0.5 : 1 }}>
+                <td>
+                  <strong>{entry.name}</strong><br />
+                  <span className="text-muted tnum" style={{ fontSize: '13px' }}>
                     {formatCurrency(entry.amount)} {FREQUENCY_LABELS[entry.frequency]}
                   </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className={`text-sm font-medium ${colorClass}`}>
+                </td>
+                <td><span className="tag tag-neutral">{entry.category}</span></td>
+                <td className={`tnum ${isIncome ? 'amt-pos' : ''}`} style={{ textAlign: 'right' }}>
                   {formatCurrency(toMonthly(entry.amount, entry.frequency))}/mo
-                </span>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => setEditingEntry(entry)}
-                    className="text-gray-500 hover:text-white text-xs px-2 py-1 rounded hover:bg-gray-800 transition-colors cursor-pointer"
-                  >
+                </td>
+                <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                  <button onClick={() => setEditingEntry(entry)} className="btn btn-ghost" type="button">
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(entry.id)}
                     disabled={isPending}
-                    className="text-gray-500 hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-gray-800 transition-colors cursor-pointer"
+                    className="btn btn-danger"
+                    type="button"
                   >
                     Delete
                   </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
 
       <CashFlowFormDialog
@@ -110,6 +110,6 @@ export function CashFlowList({ title, entries, monthlyTotal, colorClass, default
         open={!!editingEntry}
         onClose={() => setEditingEntry(null)}
       />
-    </div>
+    </section>
   )
 }

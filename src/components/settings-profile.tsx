@@ -41,70 +41,77 @@ export function SettingsProfile({ email, fullName, avatarUrl, preferences }: Pro
   }
 
   return (
-    <div className="space-y-6">
+    <>
       {/* Profile */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">Profile</h2>
-        <div className="flex items-center gap-4">
+      <section style={{ marginTop: 'var(--space-8)' }}>
+        <h3 style={{ margin: '0 0 var(--space-3)' }}>Profile</h3>
+        <div className="flex items-center" style={{ gap: 'var(--space-4)' }}>
           {avatarUrl ? (
             <img
               src={avatarUrl}
               alt="Avatar"
-              className="w-16 h-16 rounded-full"
+              style={{ width: '64px', height: '64px', borderRadius: '50%', flex: 'none' }}
             />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+            <div
+              className="flex items-center justify-center"
+              style={{
+                width: '64px', height: '64px', flex: 'none', borderRadius: '50%',
+                background: 'var(--color-accent-100)', color: 'var(--color-accent-800)',
+                fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '26px',
+              }}
+            >
               {(fullName ?? email)?.[0]?.toUpperCase()}
             </div>
           )}
           <div>
-            {fullName && <p className="text-white font-medium">{fullName}</p>}
-            <p className="text-gray-400 text-sm">{email}</p>
-            <p className="text-gray-600 text-xs mt-1">Signed in with Google</p>
+            {fullName && (
+              <p style={{ margin: '0 0 2px', fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '18px' }}>
+                {fullName}
+              </p>
+            )}
+            <p style={{ margin: '0 0 2px' }}>{email}</p>
+            <p className="text-muted" style={{ margin: 0, fontSize: '13px' }}>Signed in with Google</p>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Preferences */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">Preferences</h2>
+      <section style={{ marginTop: 'var(--space-8)' }}>
+        <h3 style={{ margin: '0 0 var(--space-3)' }}>Preferences</h3>
         <form onSubmit={handleSavePreferences}>
-          <div className="mb-4">
-            <label htmlFor="pref-timeframe" className="block text-sm text-gray-400 mb-1">
-              Default Projection Timeframe
-            </label>
-            <select
-              id="pref-timeframe"
-              name="default_timeframe"
-              defaultValue={preferences.default_timeframe}
-              className="w-full max-w-xs bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
-            >
+          <div className="field" style={{ marginBottom: 'var(--space-4)' }}>
+            <label style={{ marginBottom: 'var(--space-2)' }}>Default Projection Timeframe</label>
+            <div className="seg">
               {PROJECTION_TIMEFRAMES.map((t) => (
-                <option key={t} value={t}>{t} {t === 1 ? 'Year' : 'Years'}</option>
+                <label key={t} className="seg-opt">
+                  <input
+                    type="radio"
+                    name="default_timeframe"
+                    value={t}
+                    defaultChecked={t === preferences.default_timeframe}
+                  />
+                  <span>{t} {t === 1 ? 'Year' : 'Years'}</span>
+                </label>
               ))}
-            </select>
+            </div>
           </div>
-          <button
-            type="submit"
-            disabled={isPending}
-            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer"
-          >
+          <button type="submit" disabled={isPending} className="btn btn-primary">
             {isPending ? 'Saving...' : 'Save Preferences'}
           </button>
         </form>
-      </div>
+      </section>
 
       {/* Sign Out */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-        <h2 className="text-lg font-semibold text-white mb-2">Account</h2>
-        <p className="text-gray-500 text-sm mb-4">Sign out of your account on this device.</p>
-        <button
-          onClick={handleSignOut}
-          className="bg-red-600/20 hover:bg-red-600/30 text-red-400 text-sm font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer"
-        >
+      <section style={{ marginTop: 'var(--space-8)' }}>
+        <h3 style={{ margin: '0 0 var(--space-2)' }}>Account</h3>
+        <p className="text-muted" style={{ marginBottom: 'var(--space-3)' }}>
+          Sign out of your account on this device.
+        </p>
+        <button onClick={handleSignOut} className="btn btn-secondary" type="button">
           Sign Out
         </button>
-      </div>
-    </div>
+      </section>
+    </>
   )
 }

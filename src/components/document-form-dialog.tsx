@@ -14,20 +14,12 @@ interface Props {
 }
 
 export function DocumentFormDialog({ document: doc, open, onClose }: Props) {
-  const dialogRef = useRef<HTMLDialogElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
 
   useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-    if (open) {
-      setError(null)
-      dialog.showModal()
-    } else {
-      dialog.close()
-    }
+    if (open) setError(null)
   }, [open, doc])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -114,57 +106,55 @@ export function DocumentFormDialog({ document: doc, open, onClose }: Props) {
 
   const isEditing = !!doc
 
+  if (!open) return null
+
   return (
-    <dialog
-      ref={dialogRef}
-      onClose={onClose}
-      className="bg-gray-900 border border-gray-700 rounded-xl p-0 w-full max-w-md backdrop:bg-black/60"
-    >
-      <form ref={formRef} onSubmit={handleSubmit} className="p-6">
-        <h2 className="text-xl font-bold text-white mb-6">
+    <div className="dialog-backdrop" onClick={onClose}>
+      <div className="dialog" onClick={(e) => e.stopPropagation()}>
+        <h2 className="dialog-title">
           {isEditing ? 'Edit Document' : 'Upload Document'}
         </h2>
 
-        {doc && <input type="hidden" name="id" value={doc.id} />}
+        <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col" style={{ gap: 'var(--space-3)' }}>
+          {doc && <input type="hidden" name="id" value={doc.id} />}
 
-        {error && (
-          <p className="text-red-400 text-sm mb-4 bg-red-400/10 p-3 rounded-lg">{error}</p>
-        )}
+          {error && (
+            <p style={{ margin: 0, color: 'var(--color-accent-2-700)', fontSize: '14px' }}>{error}</p>
+          )}
 
-        <div className="space-y-4">
           {!isEditing && (
-            <div>
-              <label htmlFor="doc-file" className="block text-sm text-gray-400 mb-1">File</label>
+            <div className="field">
+              <label htmlFor="doc-file">File</label>
               <input
                 id="doc-file"
                 type="file"
                 required
                 accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx,.csv,.txt"
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500 file:mr-3 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-3 file:py-1 file:text-sm file:cursor-pointer"
+                className="input"
               />
             </div>
           )}
 
-          <div>
-            <label htmlFor="doc-name" className="block text-sm text-gray-400 mb-1">Name</label>
+          <div className="field">
+            <label htmlFor="doc-name">Name</label>
             <input
               id="doc-name"
               name="name"
               type="text"
               required
               defaultValue={doc?.name ?? ''}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="input"
               placeholder="e.g. 2025 Tax Return"
             />
           </div>
 
-          <div>
-            <label htmlFor="doc-category" className="block text-sm text-gray-400 mb-1">Category</label>
+          <div className="field">
+            <label htmlFor="doc-category">Category</label>
             <select
               id="doc-category"
               name="category"
               defaultValue={doc?.category ?? 'Other'}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="select"
             >
               {Object.entries(DOCUMENT_CATEGORY_GROUPS).map(([group, categories]) => (
                 <optgroup key={group} label={group}>
@@ -176,47 +166,47 @@ export function DocumentFormDialog({ document: doc, open, onClose }: Props) {
             </select>
           </div>
 
-          <div>
-            <label htmlFor="doc-tags" className="block text-sm text-gray-400 mb-1">Tags (optional, comma-separated)</label>
+          <div className="field">
+            <label htmlFor="doc-tags">Tags (optional, comma-separated)</label>
             <input
               id="doc-tags"
               name="tags"
               type="text"
               defaultValue={doc?.tags?.join(', ') ?? ''}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="input"
               placeholder="e.g. 2025, federal, personal"
             />
           </div>
 
-          <div>
-            <label htmlFor="doc-notes" className="block text-sm text-gray-400 mb-1">Notes (optional)</label>
+          <div className="field">
+            <label htmlFor="doc-notes">Notes (optional)</label>
             <textarea
               id="doc-notes"
               name="notes"
               rows={2}
               defaultValue={doc?.notes ?? ''}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500 resize-none"
+              className="input"
             />
           </div>
-        </div>
 
-        <div className="flex gap-3 mt-6">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer"
-          >
-            {isPending ? (isEditing ? 'Saving...' : 'Uploading...') : isEditing ? 'Save Changes' : 'Upload'}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors cursor-pointer"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
-    </dialog>
+          <div className="dialog-actions">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="btn btn-primary"
+            >
+              {isPending ? (isEditing ? 'Saving...' : 'Uploading...') : isEditing ? 'Save Changes' : 'Upload'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   )
 }

@@ -26,52 +26,82 @@ export default async function PlanningPage() {
   const avalanche = debtResult.strategies.find((s) => s.strategy === 'avalanche')!
   const debtFreeDate = getDebtFreeDate(avalanche.months)
 
-  return (
-    <div>
-      <h1 className="text-3xl font-bold text-white mb-2">Planning</h1>
-      <p className="text-gray-400 mb-8">See where you&apos;re headed and set financial goals.</p>
+  const figureStyle = { margin: 0, fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '28px' } as const
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Current Net Worth</p>
-          <p className={`text-2xl font-bold ${nwSummary.netWorth >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {formatCurrency(nwSummary.netWorth)}
-          </p>
+  return (
+    <div
+      className="sheet"
+      style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: 'var(--space-6) var(--space-8) var(--space-8)',
+      }}
+    >
+      <h1 style={{ margin: '0 0 var(--space-2)' }}>Planning</h1>
+      <p className="text-muted" style={{ margin: '0 0 var(--space-8)', maxWidth: '40rem' }}>
+        See where you&apos;re headed and set financial goals.
+      </p>
+
+      {/* Big-picture figures */}
+      <section>
+        <h6 style={{ margin: '0 0 var(--space-3)' }}>Where you stand</h6>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: 'var(--space-6)',
+            alignItems: 'start',
+          }}
+        >
+          <div>
+            <p className="text-muted" style={{ margin: '0 0 6px', fontSize: '13px' }}>Current net worth</p>
+            <p className={`tnum ${nwSummary.netWorth < 0 ? 'amt-warn' : ''}`} style={figureStyle}>
+              {nwSummary.netWorth < 0
+                ? `−${formatCurrency(Math.abs(nwSummary.netWorth))}`
+                : formatCurrency(nwSummary.netWorth)}
+            </p>
+          </div>
+          <div>
+            <p className="text-muted" style={{ margin: '0 0 6px', fontSize: '13px' }}>Debt-free date</p>
+            <p style={figureStyle}>{debts.length > 0 ? debtFreeDate : 'No debt'}</p>
+            {debts.length > 0 && avalanche.months > 0 && (
+              <p className="text-muted" style={{ margin: '2px 0 0', fontSize: '13px' }}>
+                {formatMonths(avalanche.months)} remaining
+              </p>
+            )}
+          </div>
+          <div>
+            <p className="text-muted" style={{ margin: '0 0 6px', fontSize: '13px' }}>Monthly surplus</p>
+            <p
+              className={`tnum ${cashFlow.monthlySurplus >= 0 ? 'amt-pos' : 'amt-warn'}`}
+              style={figureStyle}
+            >
+              {cashFlow.monthlySurplus >= 0
+                ? formatCurrency(cashFlow.monthlySurplus)
+                : `−${formatCurrency(Math.abs(cashFlow.monthlySurplus))}`}
+            </p>
+          </div>
+          <div>
+            <p className="text-muted" style={{ margin: '0 0 6px', fontSize: '13px' }}>Active goals</p>
+            <p className="tnum" style={figureStyle}>{financialGoals.length}</p>
+          </div>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Debt-Free Date</p>
-          <p className="text-2xl font-bold text-white">
-            {debts.length > 0 ? debtFreeDate : 'No debt'}
-          </p>
-          {debts.length > 0 && avalanche.months > 0 && (
-            <p className="text-xs text-gray-500 mt-1">{formatMonths(avalanche.months)} remaining</p>
-          )}
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Monthly Surplus</p>
-          <p className={`text-2xl font-bold ${cashFlow.monthlySurplus >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {formatCurrency(cashFlow.monthlySurplus)}
-          </p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Active Goals</p>
-          <p className="text-2xl font-bold text-white">{financialGoals.length}</p>
-        </div>
-      </div>
+      </section>
 
       {/* Projection charts */}
-      <div className="mb-8">
+      <section style={{ marginTop: 'var(--space-8)' }}>
         <ProjectionCharts
           currentNetWorth={nwSummary.netWorth}
           monthlySurplus={cashFlow.monthlySurplus}
           debts={debts}
           savingsGoals={savingsGoals}
         />
-      </div>
+      </section>
 
       {/* Financial goals */}
-      <GoalList goals={financialGoals} monthlySurplus={cashFlow.monthlySurplus} />
+      <section style={{ marginTop: 'var(--space-8)' }}>
+        <GoalList goals={financialGoals} monthlySurplus={cashFlow.monthlySurplus} />
+      </section>
     </div>
   )
 }

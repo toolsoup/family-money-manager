@@ -68,11 +68,14 @@ export function PlaidLinkButton({ isConfigured }: Props) {
 
   if (!isConfigured) {
     return (
-      <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-        <p className="text-gray-400 text-sm">
-          Set up Plaid to automatically sync bank accounts. Add <code className="text-blue-400">PLAID_CLIENT_ID</code> and <code className="text-blue-400">PLAID_SECRET</code> environment variables to get started.
+      <div className="card">
+        <p style={{ margin: 0 }}>
+          Set up Plaid to automatically sync bank accounts. Add{' '}
+          <code style={{ color: 'var(--color-accent-700)' }}>PLAID_CLIENT_ID</code> and{' '}
+          <code style={{ color: 'var(--color-accent-700)' }}>PLAID_SECRET</code> environment
+          variables to get started.
         </p>
-        <p className="text-gray-500 text-xs mt-2">
+        <p className="text-muted" style={{ margin: 0, fontSize: '13px' }}>
           Sign up at plaid.com — the sandbox environment is free.
         </p>
       </div>
@@ -82,14 +85,28 @@ export function PlaidLinkButton({ isConfigured }: Props) {
   return (
     <div>
       {error && (
-        <p className="text-red-400 text-sm mb-3 bg-red-400/10 p-3 rounded-lg">{error}</p>
+        <p
+          className="amt-warn"
+          style={{
+            marginBottom: 'var(--space-3)',
+            padding: 'var(--space-3)',
+            borderRadius: 'var(--radius-md)',
+            background: 'var(--color-accent-2-100)',
+            fontSize: '14px',
+          }}
+        >
+          {error}
+        </p>
       )}
       <button
         onClick={fetchLinkToken}
         disabled={isLoading}
-        className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer"
+        className="btn btn-primary"
       >
-        {isLoading ? 'Connecting...' : '+ Connect Bank Account'}
+        <svg viewBox="0 0 256 256" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z" />
+        </svg>
+        {isLoading ? 'Connecting...' : 'Connect Bank Account'}
       </button>
     </div>
   )

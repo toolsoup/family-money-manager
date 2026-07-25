@@ -1,272 +1,256 @@
 import {
+  getAccounts,
   getNetWorthSummary,
-  getDebtAccounts,
   getCashFlowEntries,
-  getSavingsGoals,
-  getFinancialGoals,
-  getDocuments,
 } from '@/lib/queries'
+import { createClient } from '@/lib/supabase/server'
 import { calculateCashFlowSummary } from '@/lib/cash-flow-calculator'
-import { calculatePayoff } from '@/lib/debt-calculator'
-import { getDebtFreeDate } from '@/lib/projection-calculator'
-import { formatCurrency, formatMonths, formatFileSize } from '@/lib/format'
-import { DashboardOverview } from '@/components/dashboard-overview'
+import { formatCurrency } from '@/lib/format'
+import { ACCOUNT_TYPE_LABELS, type Account, type CashFlowEntry } from '@/lib/types'
 import Link from 'next/link'
 
+// ── small Phosphor duotone icons, keyed off account type ──────────────────
+function AccountIcon({ type }: { type: Account['type'] }) {
+  const common = { viewBox: '0 0 256 256', width: 18, height: 18, fill: 'currentColor', 'aria-hidden': true } as const
+  switch (type) {
+    case 'property':
+    case 'mortgage':
+    case 'line_of_credit':
+      return (
+        <svg {...common}>
+          <path d="M216,120v96H152V152H104v64H40V120a8,8,0,0,1,2.34-5.66l80-80a8,8,0,0,1,11.32,0l80,80A8,8,0,0,1,216,120Z" opacity="0.2" />
+          <path d="M219.31,108.68l-80-80a16,16,0,0,0-22.62,0l-80,80A15.87,15.87,0,0,0,32,120v96a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V160h32v56a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V120A15.87,15.87,0,0,0,219.31,108.68ZM208,208H160V152a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8v56H48V120l80-80,80,80Z" />
+        </svg>
+      )
+    case 'investment':
+      return (
+        <svg {...common}>
+          <path d="M232,56v64L168,56Z" opacity="0.2" />
+          <path d="M232,48H168a8,8,0,0,0-5.66,13.66L188.69,88,136,140.69l-34.34-34.35a8,8,0,0,0-11.32,0l-72,72a8,8,0,0,0,11.32,11.32L96,123.31l34.34,34.35a8,8,0,0,0,11.32,0L200,99.31l26.34,26.35A8,8,0,0,0,240,120V56A8,8,0,0,0,232,48Zm-8,52.69L187.31,64H224Z" />
+        </svg>
+      )
+    case 'credit_card':
+      return (
+        <svg {...common}>
+          <path d="M232,96v96a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V96Z" opacity="0.2" />
+          <path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Zm-16-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Zm-64,0a8,8,0,0,1-8,8H120a8,8,0,0,1,0-16h16A8,8,0,0,1,144,168Z" />
+        </svg>
+      )
+    default:
+      return (
+        <svg {...common}>
+          <path d="M232,96H24L128,32Z" opacity="0.2" />
+          <path d="M24,104H48v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16H208V104h24a8,8,0,0,0,4.19-14.81l-104-64a8,8,0,0,0-8.38,0l-104,64A8,8,0,0,0,24,104Zm40,0H96v64H64Zm80,0v64H112V104Zm48,64H160V104h32ZM128,41.39,203.74,88H52.26ZM248,208a8,8,0,0,1-8,8H16a8,8,0,0,1,0-16H240A8,8,0,0,1,248,208Z" />
+        </svg>
+      )
+  }
+}
+
+function greeting(): string {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 18) return 'Good afternoon'
+  return 'Good evening'
+}
+
 export default async function DashboardPage() {
-  const [nwSummary, debts, cashFlowEntries, savingsGoals, financialGoals, documents] =
-    await Promise.all([
-      getNetWorthSummary(),
-      getDebtAccounts(),
-      getCashFlowEntries(),
-      getSavingsGoals(),
-      getFinancialGoals(),
-      getDocuments(),
-    ])
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const fullName: string | undefined =
+    user?.user_metadata?.full_name || user?.user_metadata?.name
+  const firstName = fullName ? fullName.split(' ')[0] : null
+
+  const [accounts, nwSummary, cashFlowEntries] = await Promise.all([
+    getAccounts(),
+    getNetWorthSummary(),
+    getCashFlowEntries(),
+  ])
 
   const cashFlow = calculateCashFlowSummary(cashFlowEntries)
-  const totalDebt = debts.reduce((sum, d) => sum + d.balance, 0)
-  const debtResult = calculatePayoff(debts, Math.max(0, cashFlow.monthlySurplus))
-  const avalanche = debtResult.strategies.find((s) => s.strategy === 'avalanche')!
-  const recentDocs = documents.slice(0, 3)
-  const topGoals = savingsGoals.slice(0, 3)
+
+  // Spending by category — top 5, remainder folded into "Everything else".
+  const totalExpenses = cashFlow.totalMonthlyExpenses
+  const topCategories = cashFlow.expenseBreakdown.slice(0, 5)
+  const restTotal = cashFlow.expenseBreakdown
+    .slice(5)
+    .reduce((sum, c) => sum + c.monthlyAmount, 0)
+  const pct = (n: number) => (totalExpenses > 0 ? Math.round((n / totalExpenses) * 100) : 0)
+
+  // Recent activity — cash-flow entries by most recently added.
+  const recent = [...cashFlowEntries]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 12)
+
+  const dateLine = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric',
+  })
+
+  const signedAmount = (e: CashFlowEntry) =>
+    e.type === 'income' ? formatCurrency(e.amount) : `−${formatCurrency(e.amount)}`
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
-      <p className="text-gray-400 mb-8">Your complete financial overview.</p>
+    <div
+      className="sheet"
+      style={{
+        maxWidth: '1180px',
+        margin: '0 auto',
+        padding: 'var(--space-6) var(--space-8) var(--space-8)',
+      }}
+    >
+      {/* Greeting + primary action */}
+      <div
+        className="flex"
+        style={{ alignItems: 'flex-end', justifyContent: 'space-between', gap: 'var(--space-6)', margin: 'var(--space-2) 0 var(--space-6)' }}
+      >
+        <div>
+          <h6 className="text-muted" style={{ margin: '0 0 var(--space-2)' }}>{dateLine}</h6>
+          <h1 style={{ margin: 0, fontSize: '46px', lineHeight: 1.03 }}>
+            {greeting()}{firstName ? `, ${firstName}` : ''}
+          </h1>
+        </div>
+        <Link href="/dashboard/cash-flow" className="btn btn-primary">
+          <svg viewBox="0 0 256 256" width="16" height="16" fill="currentColor" aria-hidden="true">
+            <path d="M216,56V200a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V56A16,16,0,0,1,56,40H200A16,16,0,0,1,216,56Z" opacity="0.2" />
+            <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z" />
+          </svg>
+          Add money in or out
+        </Link>
+      </div>
 
-      {/* Key stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Net Worth</p>
-          <p className={`text-2xl font-bold ${nwSummary.netWorth >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {formatCurrency(nwSummary.netWorth)}
-          </p>
-          <p className="text-xs text-gray-600 mt-1">
-            {formatCurrency(nwSummary.totalAssets)} assets · {formatCurrency(nwSummary.totalLiabilities)} liabilities
-          </p>
+      {/* Balances */}
+      <h6 style={{ margin: '0 0 var(--space-3)' }}>Balances</h6>
+      {accounts.length === 0 ? (
+        <p className="text-muted" style={{ maxWidth: '40rem' }}>
+          No accounts yet. <Link href="/dashboard/net-worth">Add what you own and owe</Link> to see
+          your balances here.
+        </p>
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+            gap: 'var(--space-6)',
+            alignItems: 'start',
+          }}
+        >
+          {accounts.slice(0, 10).map((a) => (
+            <div key={a.id}>
+              <div className="flex items-center" style={{ gap: '8px', marginBottom: '6px' }}>
+                <span style={{ color: 'var(--color-accent)' }}><AccountIcon type={a.type} /></span>
+                <span style={{ fontSize: '14px' }}>{a.name}</span>
+              </div>
+              <p
+                className="tnum"
+                style={{ margin: '0 0 2px', fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '28px' }}
+              >
+                {a.is_asset ? formatCurrency(a.balance) : `−${formatCurrency(a.balance)}`}
+              </p>
+              <p className="text-muted" style={{ margin: 0, fontSize: '13px' }}>
+                {a.institution || ACCOUNT_TYPE_LABELS[a.type]}
+              </p>
+            </div>
+          ))}
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Monthly Surplus</p>
-          <p className={`text-2xl font-bold ${cashFlow.monthlySurplus >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {formatCurrency(cashFlow.monthlySurplus)}
-          </p>
-          <p className="text-xs text-gray-600 mt-1">
-            {formatCurrency(cashFlow.totalMonthlyIncome)} in · {formatCurrency(cashFlow.totalMonthlyExpenses)} out
-          </p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Total Debt</p>
-          <p className="text-2xl font-bold text-red-400">
-            {totalDebt > 0 ? formatCurrency(totalDebt) : '$0.00'}
-          </p>
-          {debts.length > 0 && avalanche.months > 0 && (
-            <p className="text-xs text-gray-600 mt-1">
-              Debt-free: {getDebtFreeDate(avalanche.months)} ({formatMonths(avalanche.months)})
+      )}
+
+      {/* Net worth line */}
+      <div
+        className="flex"
+        style={{ justifyContent: 'space-between', alignItems: 'baseline', margin: 'var(--space-6) 0 0', maxWidth: '46rem' }}
+      >
+        <p style={{ margin: 0, fontSize: '15px' }}>
+          Everything together, net worth is{' '}
+          <span
+            className="tnum"
+            style={{
+              fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '20px',
+              color: nwSummary.netWorth < 0 ? 'var(--color-accent-2-700)' : 'var(--color-text)',
+            }}
+          >
+            {nwSummary.netWorth < 0
+              ? `−${formatCurrency(Math.abs(nwSummary.netWorth))}`
+              : formatCurrency(nwSummary.netWorth)}
+          </span>
+        </p>
+        <p className="text-muted tnum" style={{ margin: 0, fontSize: '14px' }}>
+          {formatCurrency(nwSummary.totalAssets)} owned · {formatCurrency(nwSummary.totalLiabilities)} owed
+        </p>
+      </div>
+
+      {/* Spending + recent activity */}
+      <div
+        style={{ display: 'grid', gridTemplateColumns: '1fr 1.25fr', gap: 'var(--space-8)', marginTop: 'var(--space-8)', alignItems: 'start' }}
+      >
+        {/* Spending by category */}
+        <div>
+          <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 'var(--space-3)' }}>
+            <h3 style={{ margin: 0 }}>Spending by category</h3>
+            <span className="text-muted tnum" style={{ fontSize: '14px' }}>{formatCurrency(totalExpenses)}/mo</span>
+          </div>
+          {topCategories.length === 0 ? (
+            <p className="text-muted">
+              No expenses tracked yet. <Link href="/dashboard/cash-flow">Add your monthly costs</Link>.
             </p>
-          )}
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Active Goals</p>
-          <p className="text-2xl font-bold text-white">{financialGoals.length}</p>
-          <p className="text-xs text-gray-600 mt-1">
-            {savingsGoals.length} savings · {documents.length} docs
-          </p>
-        </div>
-      </div>
-
-      {/* Net Worth Projection Chart */}
-      <div className="mb-8">
-        <DashboardOverview
-          currentNetWorth={nwSummary.netWorth}
-          monthlySurplus={cashFlow.monthlySurplus}
-        />
-      </div>
-
-      {/* Two-column grid: Cash Flow + Debt */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Cash Flow Summary */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Cash Flow</h2>
-            <Link href="/dashboard/cash-flow" className="text-blue-400 hover:text-blue-300 text-xs">
-              View details
-            </Link>
-          </div>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400 text-sm">Income</span>
-              <span className="text-green-400 font-medium">{formatCurrency(cashFlow.totalMonthlyIncome)}/mo</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400 text-sm">Expenses</span>
-              <span className="text-red-400 font-medium">{formatCurrency(cashFlow.totalMonthlyExpenses)}/mo</span>
-            </div>
-            <div className="border-t border-gray-800 pt-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">Surplus</span>
-                <span className={`font-bold ${cashFlow.monthlySurplus >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {formatCurrency(cashFlow.monthlySurplus)}/mo
-                </span>
-              </div>
-            </div>
-            {cashFlow.expenseBreakdown.length > 0 && (
-              <div className="pt-2">
-                <p className="text-gray-500 text-xs mb-2">Top expenses</p>
-                {cashFlow.expenseBreakdown.slice(0, 3).map((cat) => (
-                  <div key={cat.category} className="flex justify-between text-xs py-0.5">
-                    <span className="text-gray-500">{cat.category}</span>
-                    <span className="text-gray-400">{formatCurrency(cat.monthlyAmount)}/mo</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Debt Snapshot */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Debt Snapshot</h2>
-            <Link href="/dashboard/debt-destroyer" className="text-blue-400 hover:text-blue-300 text-xs">
-              View strategies
-            </Link>
-          </div>
-          {debts.length === 0 ? (
-            <p className="text-gray-500 text-sm">No debts tracked. You&apos;re debt free!</p>
           ) : (
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">Total Debt</span>
-                <span className="text-red-400 font-bold">{formatCurrency(totalDebt)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">Debt-Free Date</span>
-                <span className="text-white font-medium">{getDebtFreeDate(avalanche.months)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">Interest Saved (Avalanche)</span>
-                <span className="text-green-400 font-medium">
-                  {formatCurrency(
-                    (debtResult.strategies.find((s) => s.strategy === 'minimum_only')?.totalInterestPaid ?? 0)
-                    - avalanche.totalInterestPaid
-                  )}
-                </span>
-              </div>
-              <div className="border-t border-gray-800 pt-3">
-                <p className="text-gray-500 text-xs mb-2">Your debts</p>
-                {debts.map((d) => (
-                  <div key={d.id} className="flex justify-between text-xs py-0.5">
-                    <span className="text-gray-500">{d.name}</span>
-                    <span className="text-red-400">{formatCurrency(d.balance)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Two-column grid: Savings Goals + Recent Documents */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Savings Goals */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Savings Goals</h2>
-            <Link href="/dashboard/cash-flow" className="text-blue-400 hover:text-blue-300 text-xs">
-              View all
-            </Link>
-          </div>
-          {topGoals.length === 0 ? (
-            <p className="text-gray-500 text-sm">No savings goals set yet.</p>
-          ) : (
-            <div className="space-y-4">
-              {topGoals.map((goal) => {
-                const progress = goal.target_amount > 0
-                  ? Math.min(100, (goal.current_amount / goal.target_amount) * 100)
-                  : 0
-                return (
-                  <div key={goal.id}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-white">{goal.name}</span>
-                      <span className="text-gray-400">{progress.toFixed(0)}%</span>
-                    </div>
-                    <div className="w-full bg-gray-800 rounded-full h-2">
-                      <div
-                        className="bg-blue-500 h-2 rounded-full transition-all"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                    <p className="text-gray-600 text-xs mt-1">
-                      {formatCurrency(goal.current_amount)} / {formatCurrency(goal.target_amount)}
-                    </p>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Recent Documents */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Recent Documents</h2>
-            <Link href="/dashboard/documents" className="text-blue-400 hover:text-blue-300 text-xs">
-              View all
-            </Link>
-          </div>
-          {recentDocs.length === 0 ? (
-            <p className="text-gray-500 text-sm">No documents uploaded yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {recentDocs.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white text-sm">{doc.name}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-gray-500 text-xs bg-gray-800 px-2 py-0.5 rounded">{doc.category}</span>
-                      <span className="text-gray-600 text-xs">{formatFileSize(doc.file_size)}</span>
-                    </div>
-                  </div>
-                  <span className="text-gray-600 text-xs">
-                    {new Date(doc.uploaded_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  </span>
+            <div className="flex flex-col" style={{ gap: 'var(--space-3)' }}>
+              {topCategories.map((cat, i) => (
+                <div key={cat.category}>
+                  <p style={{ margin: '0 0 5px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <span>{cat.category}</span>
+                    <span className="tnum">{formatCurrency(cat.monthlyAmount)} · {pct(cat.monthlyAmount)}%</span>
+                  </p>
+                  <div className="meter"><i className={i === 0 ? '' : 'mute'} style={{ width: `${pct(cat.monthlyAmount)}%` }} /></div>
                 </div>
               ))}
+              {restTotal > 0 && (
+                <p className="text-muted" style={{ margin: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '14px' }}>
+                  <span>Everything else</span>
+                  <span className="tnum">{formatCurrency(restTotal)} · {pct(restTotal)}%</span>
+                </p>
+              )}
             </div>
           )}
         </div>
-      </div>
 
-      {/* Quick Actions */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/dashboard/net-worth"
-            className="bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded-lg transition-colors"
-          >
-            + Add Account
-          </Link>
-          <Link
-            href="/dashboard/cash-flow"
-            className="bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded-lg transition-colors"
-          >
-            + Add Income/Expense
-          </Link>
-          <Link
-            href="/dashboard/documents"
-            className="bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded-lg transition-colors"
-          >
-            + Upload Document
-          </Link>
-          <Link
-            href="/dashboard/planning"
-            className="bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded-lg transition-colors"
-          >
-            + Set a Goal
-          </Link>
+        {/* Recent cash flow */}
+        <div>
+          <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 'var(--space-3)' }}>
+            <h3 style={{ margin: 0 }}>Recent cash flow</h3>
+            <Link href="/dashboard/cash-flow" className="btn btn-ghost" style={{ paddingInline: 0 }}>See all</Link>
+          </div>
+          {recent.length === 0 ? (
+            <p className="text-muted">Nothing logged yet.</p>
+          ) : (
+            <div style={{ maxHeight: '420px', overflowY: 'auto', paddingRight: 'var(--space-2)' }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Added</th>
+                    <th>What</th>
+                    <th>Category</th>
+                    <th style={{ textAlign: 'right' }}>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recent.map((e) => (
+                    <tr key={e.id}>
+                      <td className="tnum text-muted">
+                        {new Date(e.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </td>
+                      <td>
+                        <strong>{e.name}</strong><br />
+                        <span className="text-muted" style={{ fontSize: '13px', textTransform: 'capitalize' }}>{e.frequency}</span>
+                      </td>
+                      <td><span className={`tag ${e.type === 'income' ? 'tag-accent' : 'tag-neutral'}`}>{e.category}</span></td>
+                      <td className={`tnum ${e.type === 'income' ? 'amt-pos' : ''}`} style={{ textAlign: 'right' }}>
+                        {signedAmount(e)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>

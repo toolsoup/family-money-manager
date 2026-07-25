@@ -14,34 +14,59 @@ export default async function CashFlowPage() {
   const summary = calculateCashFlowSummary(entries)
   const isSurplus = summary.monthlySurplus >= 0
 
-  return (
-    <div>
-      <h1 className="text-3xl font-bold text-white mb-2">Cash Flow</h1>
-      <p className="text-gray-400 mb-8">Track your income, expenses, and savings goals.</p>
+  const figureStyle = {
+    margin: '2px 0 0',
+    fontFamily: 'var(--font-heading)',
+    fontWeight: 600,
+    fontSize: '28px',
+  } as const
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Monthly Income</p>
-          <p className="text-2xl font-bold text-green-400">{formatCurrency(summary.totalMonthlyIncome)}</p>
+  return (
+    <div
+      className="sheet"
+      style={{
+        maxWidth: '1180px',
+        margin: '0 auto',
+        padding: 'var(--space-6) var(--space-8) var(--space-8)',
+      }}
+    >
+      <h1 style={{ margin: '0 0 var(--space-2)' }}>Money in and out</h1>
+      <p className="text-muted" style={{ margin: '0 0 var(--space-6)' }}>
+        Track your income, expenses, and savings goals.
+      </p>
+
+      {/* Monthly summary */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: 'var(--space-6)',
+          alignItems: 'start',
+        }}
+      >
+        <div>
+          <h6 className="text-muted" style={{ margin: 0 }}>Monthly income</h6>
+          <p className="tnum amt-pos" style={figureStyle}>{formatCurrency(summary.totalMonthlyIncome)}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Monthly Expenses</p>
-          <p className="text-2xl font-bold text-red-400">{formatCurrency(summary.totalMonthlyExpenses)}</p>
+        <div>
+          <h6 className="text-muted" style={{ margin: 0 }}>Monthly expenses</h6>
+          <p className="tnum" style={figureStyle}>{formatCurrency(summary.totalMonthlyExpenses)}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Monthly {isSurplus ? 'Surplus' : 'Deficit'}</p>
-          <p className={`text-2xl font-bold ${isSurplus ? 'text-white' : 'text-red-400'}`}>
-            {formatCurrency(summary.monthlySurplus)}
+        <div>
+          <h6 className="text-muted" style={{ margin: 0 }}>Monthly {isSurplus ? 'surplus' : 'deficit'}</h6>
+          <p className={`tnum ${isSurplus ? '' : 'amt-warn'}`} style={figureStyle}>
+            {isSurplus
+              ? formatCurrency(summary.monthlySurplus)
+              : `−${formatCurrency(Math.abs(summary.monthlySurplus))}`}
           </p>
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="flex flex-col" style={{ gap: 'var(--space-8)', marginTop: 'var(--space-8)' }}>
         <CashFlowList
           title="Income"
           entries={incomeEntries}
           monthlyTotal={summary.totalMonthlyIncome}
-          colorClass="text-green-400"
           defaultType="income"
         />
 
@@ -49,13 +74,12 @@ export default async function CashFlowPage() {
           title="Expenses"
           entries={expenseEntries}
           monthlyTotal={summary.totalMonthlyExpenses}
-          colorClass="text-red-400"
           defaultType="expense"
         />
 
         <CategoryChart
           data={summary.expenseBreakdown}
-          title="Expense Breakdown"
+          title="Expense breakdown"
         />
 
         <SavingsGoalsList

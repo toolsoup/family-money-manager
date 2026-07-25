@@ -12,15 +12,17 @@ interface Props {
   title: string
   accounts: Account[]
   total: number
-  colorClass: string
   defaultType?: AccountType
 }
 
-export function AccountList({ title, accounts, total, colorClass, defaultType }: Props) {
+export function AccountList({ title, accounts, total, defaultType }: Props) {
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
   const [showAdd, setShowAdd] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  const isLiability = accounts.length > 0 && accounts.every((a) => !a.is_asset)
+  const signedTotal = isLiability ? `−${formatCurrency(total)}` : formatCurrency(total)
 
   function handleDelete(id: string) {
     if (!confirm('Delete this account?')) return
@@ -37,63 +39,73 @@ export function AccountList({ title, accounts, total, colorClass, defaultType }:
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl">
-      <div className="flex items-center justify-between p-6 border-b border-gray-800">
+    <div>
+      <div
+        className="flex items-center justify-between"
+        style={{ marginBottom: 'var(--space-3)' }}
+      >
         <div>
-          <h2 className="text-lg font-semibold text-white">{title}</h2>
-          <p className={`text-2xl font-bold mt-1 ${colorClass}`}>{formatCurrency(total)}</p>
+          <h3 style={{ margin: 0 }}>{title}</h3>
+          <p
+            className="tnum"
+            style={{ margin: '4px 0 0', fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '25px' }}
+          >
+            {signedTotal}
+          </p>
         </div>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer"
-        >
+        <button onClick={() => setShowAdd(true)} className="btn btn-secondary">
           + Add
         </button>
       </div>
 
       {accounts.length === 0 ? (
-        <p className="p-6 text-gray-500 text-sm">No accounts yet. Click + Add to get started.</p>
+        <p className="text-muted" style={{ fontSize: '14px' }}>
+          No accounts yet. Click + Add to get started.
+        </p>
       ) : (
-        <div className="divide-y divide-gray-800">
+        <div className="flex flex-col" style={{ gap: 'var(--space-2)' }}>
           {accounts.map((account) => (
             <div
               key={account.id}
-              className={`flex items-center justify-between p-4 px-6 ${
-                deletingId === account.id ? 'opacity-50' : ''
-              }`}
+              className="card flex items-center justify-between"
+              style={{
+                flexDirection: 'row',
+                gap: 'var(--space-4)',
+                opacity: deletingId === account.id ? 0.5 : 1,
+              }}
             >
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium truncate">{account.name}</p>
-                <div className="flex items-center gap-2 mt-0.5">
+                <p style={{ margin: 0, fontSize: '15px' }} className="truncate">{account.name}</p>
+                <div className="flex items-center" style={{ gap: 'var(--space-2)', marginTop: '4px', flexWrap: 'wrap' }}>
                   {account.institution && (
-                    <span className="text-gray-500 text-xs">{account.institution}</span>
+                    <span className="text-muted" style={{ fontSize: '12px' }}>{account.institution}</span>
                   )}
-                  <span className="text-gray-600 text-xs bg-gray-800 px-2 py-0.5 rounded">
-                    {ACCOUNT_TYPE_LABELS[account.type]}
-                  </span>
+                  <span className="tag tag-neutral">{ACCOUNT_TYPE_LABELS[account.type]}</span>
                   {account.interest_rate != null && (
-                    <span className="text-gray-600 text-xs">{formatPercent(account.interest_rate)} APR</span>
+                    <span className="text-muted tnum" style={{ fontSize: '12px' }}>{formatPercent(account.interest_rate)} APR</span>
                   )}
                   {account.minimum_payment != null && (
-                    <span className="text-gray-600 text-xs">{formatCurrency(account.minimum_payment)}/mo</span>
+                    <span className="text-muted tnum" style={{ fontSize: '12px' }}>{formatCurrency(account.minimum_payment)}/mo</span>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className={`text-sm font-medium ${colorClass}`}>
-                  {formatCurrency(account.balance)}
+              <div className="flex items-center" style={{ gap: 'var(--space-4)' }}>
+                <span className="tnum" style={{ fontSize: '15px' }}>
+                  {account.is_asset ? formatCurrency(account.balance) : `−${formatCurrency(account.balance)}`}
                 </span>
-                <div className="flex gap-1">
+                <div className="flex" style={{ gap: '2px' }}>
                   <button
                     onClick={() => setEditingAccount(account)}
-                    className="text-gray-500 hover:text-white text-xs px-2 py-1 rounded hover:bg-gray-800 transition-colors cursor-pointer"
+                    className="btn btn-ghost"
+                    style={{ fontSize: '13px' }}
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(account.id)}
                     disabled={isPending}
-                    className="text-gray-500 hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-gray-800 transition-colors cursor-pointer"
+                    className="btn btn-danger"
+                    style={{ fontSize: '13px' }}
                   >
                     Delete
                   </button>

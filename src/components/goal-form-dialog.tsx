@@ -13,20 +13,12 @@ interface Props {
 }
 
 export function GoalFormDialog({ goal, open, onClose }: Props) {
-  const dialogRef = useRef<HTMLDialogElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
 
   useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-    if (open) {
-      setError(null)
-      dialog.showModal()
-    } else {
-      dialog.close()
-    }
+    if (open) setError(null)
   }, [open, goal])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -51,44 +43,40 @@ export function GoalFormDialog({ goal, open, onClose }: Props) {
 
   const isEditing = !!goal
 
+  if (!open) return null
+
   return (
-    <dialog
-      ref={dialogRef}
-      onClose={onClose}
-      className="bg-gray-900 border border-gray-700 rounded-xl p-0 w-full max-w-md backdrop:bg-black/60"
-    >
-      <form ref={formRef} onSubmit={handleSubmit} className="p-6">
-        <h2 className="text-xl font-bold text-white mb-6">
-          {isEditing ? 'Edit Goal' : 'Add Goal'}
-        </h2>
+    <div className="dialog-backdrop" onClick={onClose}>
+      <div className="dialog" onClick={(e) => e.stopPropagation()}>
+        <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col" style={{ gap: 'var(--space-3)' }}>
+          <h2 className="dialog-title">{isEditing ? 'Edit Goal' : 'Add Goal'}</h2>
 
-        {goal && <input type="hidden" name="id" value={goal.id} />}
+          {goal && <input type="hidden" name="id" value={goal.id} />}
 
-        {error && (
-          <p className="text-red-400 text-sm mb-4 bg-red-400/10 p-3 rounded-lg">{error}</p>
-        )}
+          {error && (
+            <p className="amt-warn" style={{ margin: 0, fontSize: '13px' }}>{error}</p>
+          )}
 
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="goal-name" className="block text-sm text-gray-400 mb-1">Goal Name</label>
+          <div className="field">
+            <label htmlFor="goal-name">Goal Name</label>
             <input
               id="goal-name"
               name="name"
               type="text"
               required
               defaultValue={goal?.name ?? ''}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="input"
               placeholder="e.g. Net worth $100K"
             />
           </div>
 
-          <div>
-            <label htmlFor="goal-category" className="block text-sm text-gray-400 mb-1">Category</label>
+          <div className="field">
+            <label htmlFor="goal-category">Category</label>
             <select
               id="goal-category"
               name="category"
               defaultValue={goal?.category ?? 'net_worth'}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="input select"
             >
               {GOAL_CATEGORIES.map((c) => (
                 <option key={c} value={c}>{GOAL_CATEGORY_LABELS[c as GoalCategory]}</option>
@@ -96,8 +84,8 @@ export function GoalFormDialog({ goal, open, onClose }: Props) {
             </select>
           </div>
 
-          <div>
-            <label htmlFor="goal-target" className="block text-sm text-gray-400 mb-1">Target Value ($)</label>
+          <div className="field">
+            <label htmlFor="goal-target">Target Value ($)</label>
             <input
               id="goal-target"
               name="target_value"
@@ -105,64 +93,64 @@ export function GoalFormDialog({ goal, open, onClose }: Props) {
               step="0.01"
               required
               defaultValue={goal?.target_value ?? ''}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="input"
               placeholder="100000"
             />
           </div>
 
-          <div>
-            <label htmlFor="goal-current" className="block text-sm text-gray-400 mb-1">Current Value ($)</label>
+          <div className="field">
+            <label htmlFor="goal-current">Current Value ($)</label>
             <input
               id="goal-current"
               name="current_value"
               type="number"
               step="0.01"
               defaultValue={goal?.current_value ?? 0}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="input"
               placeholder="0"
             />
           </div>
 
-          <div>
-            <label htmlFor="goal-date" className="block text-sm text-gray-400 mb-1">Target Date (optional)</label>
+          <div className="field">
+            <label htmlFor="goal-date">Target Date (optional)</label>
             <input
               id="goal-date"
               name="target_date"
               type="date"
               defaultValue={goal?.target_date ?? ''}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="input"
             />
           </div>
 
-          <div>
-            <label htmlFor="goal-notes" className="block text-sm text-gray-400 mb-1">Notes (optional)</label>
+          <div className="field">
+            <label htmlFor="goal-notes">Notes (optional)</label>
             <textarea
               id="goal-notes"
               name="notes"
               rows={2}
               defaultValue={goal?.notes ?? ''}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500 resize-none"
+              className="input"
             />
           </div>
-        </div>
 
-        <div className="flex gap-3 mt-6">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer"
-          >
-            {isPending ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Goal'}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors cursor-pointer"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
-    </dialog>
+          <div className="dialog-actions">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="btn btn-primary"
+            >
+              {isPending ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Goal'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   )
 }

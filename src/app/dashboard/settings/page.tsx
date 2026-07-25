@@ -18,24 +18,31 @@ export default async function SettingsPage() {
   const avatarUrl = (user?.user_metadata?.avatar_url as string) ?? (user?.user_metadata?.picture as string) ?? null
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
-      <p className="text-gray-400 mb-8">Manage your profile, preferences, and connected accounts.</p>
+    <div
+      className="sheet"
+      style={{
+        maxWidth: '1180px',
+        margin: '0 auto',
+        padding: 'var(--space-6) var(--space-8) var(--space-8)',
+      }}
+    >
+      <h1 style={{ margin: '0 0 var(--space-2)' }}>Settings</h1>
+      <p className="text-muted" style={{ maxWidth: '40rem' }}>
+        Manage your profile, preferences, and connected accounts.
+      </p>
 
-      <div className="space-y-6">
-        <SettingsProfile
-          email={user?.email ?? ''}
-          fullName={fullName}
-          avatarUrl={avatarUrl}
-          preferences={preferences}
-        />
+      <SettingsProfile
+        email={user?.email ?? ''}
+        fullName={fullName}
+        avatarUrl={avatarUrl}
+        preferences={preferences}
+      />
 
-        <ConnectedAccounts
-          items={plaidItems}
-          accounts={plaidAccounts}
-          isPlaidConfigured={isPlaidConfigured()}
-        />
-      </div>
+      <ConnectedAccounts
+        items={plaidItems}
+        accounts={plaidAccounts}
+        isPlaidConfigured={isPlaidConfigured()}
+      />
     </div>
   )
 }

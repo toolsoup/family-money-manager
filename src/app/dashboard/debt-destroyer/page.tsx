@@ -11,45 +11,91 @@ export default async function DebtDestroyerPage() {
 
   if (debts.length === 0) {
     return (
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Debt Destroyer</h1>
-        <p className="text-gray-400 mb-8">Crush your debt with the right strategy.</p>
+      <div
+        className="sheet"
+        style={{
+          maxWidth: '1180px',
+          margin: '0 auto',
+          padding: 'var(--space-6) var(--space-8) var(--space-8)',
+        }}
+      >
+        <h1 style={{ margin: '0 0 var(--space-2)' }}>Debt Destroyer</h1>
+        <p className="text-muted" style={{ margin: '0 0 var(--space-8)' }}>
+          Crush your debt with the right strategy.
+        </p>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center">
-          <p className="text-4xl mb-4">⚡</p>
-          <h2 className="text-lg font-semibold text-white mb-2">No debts to destroy yet</h2>
-          <p className="text-gray-400 mb-6 max-w-md mx-auto">
+        <section
+          style={{
+            marginTop: 'var(--space-8)',
+            textAlign: 'center',
+            maxWidth: '32rem',
+            marginInline: 'auto',
+          }}
+        >
+          <p style={{ fontSize: '40px', margin: '0 0 var(--space-3)' }}>⚡</p>
+          <h3 style={{ margin: '0 0 var(--space-2)' }}>No debts to destroy yet</h3>
+          <p className="text-muted" style={{ margin: '0 0 var(--space-4)' }}>
             Add liability accounts (credit cards, mortgages) with interest rates and minimum payments
             in the Net Worth section to unlock debt payoff strategies.
           </p>
-          <Link
-            href="/dashboard/net-worth"
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
-          >
+          <Link href="/dashboard/net-worth" className="btn btn-primary">
             Go to Net Worth
           </Link>
-        </div>
+        </section>
       </div>
     )
   }
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-white mb-2">Debt Destroyer</h1>
-      <p className="text-gray-400 mb-8">Crush your debt with the right strategy.</p>
+    <div
+      className="sheet"
+      style={{
+        maxWidth: '1180px',
+        margin: '0 auto',
+        padding: 'var(--space-6) var(--space-8) var(--space-8)',
+      }}
+    >
+      <h1 style={{ margin: '0 0 var(--space-2)' }}>Debt Destroyer</h1>
+      <p className="text-muted" style={{ margin: '0 0 var(--space-6)' }}>
+        Crush your debt with the right strategy.
+      </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Total Debt</p>
-          <p className="text-2xl font-bold text-red-400">{formatCurrency(totalDebt)}</p>
+      {/* Summary figures */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: 'var(--space-6)',
+          alignItems: 'start',
+        }}
+      >
+        <div>
+          <h6 className="text-muted" style={{ margin: '0 0 var(--space-2)' }}>Total debt</h6>
+          <p
+            className="tnum"
+            style={{ margin: 0, fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '28px' }}
+          >
+            −{formatCurrency(totalDebt)}
+          </p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Debts</p>
-          <p className="text-2xl font-bold text-white">{debts.length}</p>
+        <div>
+          <h6 className="text-muted" style={{ margin: '0 0 var(--space-2)' }}>Debts</h6>
+          <p
+            className="tnum"
+            style={{ margin: 0, fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '28px' }}
+          >
+            {debts.length}
+          </p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Total Minimum Payments</p>
-          <p className="text-2xl font-bold text-white">{formatCurrency(totalMinPayments)}/mo</p>
+        <div>
+          <h6 className="text-muted" style={{ margin: '0 0 var(--space-2)' }}>Total minimum payments</h6>
+          <p
+            className="tnum"
+            style={{ margin: 0, fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '28px' }}
+          >
+            {formatCurrency(totalMinPayments)}
+            <span className="text-muted" style={{ fontSize: '15px', fontWeight: 400 }}>/mo</span>
+          </p>
         </div>
       </div>
 

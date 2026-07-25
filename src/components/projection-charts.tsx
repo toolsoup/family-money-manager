@@ -25,14 +25,21 @@ const TIMEFRAME_LABELS: Record<ProjectionTimeframe, string> = {
   10: '10 Years',
 }
 
+// Broadsheet palette — cyan and magenta lead, neutrals fill the rest.
 const GOAL_COLORS = [
-  '#3b82f6', '#10b981', '#a855f7', '#f59e0b', '#ef4444',
-  '#ec4899', '#06b6d4', '#f97316',
+  '#0088b0', '#d6006c', '#9b9797', '#605d5d',
+  '#bab6b6', '#38a6cf', '#004961', '#790e3d',
 ]
 
 const TOOLTIP_STYLE = {
-  contentStyle: { backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: 8 },
-  labelStyle: { color: '#9ca3af' },
+  contentStyle: {
+    background: '#f3f2f2',
+    border: '1px solid #d7d3d3',
+    borderRadius: 2,
+    color: '#201e1d',
+    fontFamily: 'var(--font-body)',
+  },
+  labelStyle: { color: '#605d5d' },
 }
 
 interface Props {
@@ -65,28 +72,26 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
   const tickInterval = months <= 12 ? 1 : months <= 36 ? 3 : months <= 60 ? 6 : 12
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Timeframe toggle */}
-      <div className="flex gap-2">
+      <div className="seg">
         {([1, 3, 5, 10] as ProjectionTimeframe[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTimeframe(t)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-              timeframe === t
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-            }`}
-          >
+          <label key={t} className="seg-opt">
+            <input
+              type="radio"
+              name="projection-timeframe"
+              checked={timeframe === t}
+              onChange={() => setTimeframe(t)}
+            />
             {TIMEFRAME_LABELS[t]}
-          </button>
+          </label>
         ))}
       </div>
 
       {/* Net Worth Growth */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-        <h2 className="text-lg font-semibold text-white mb-1">Net Worth Projection</h2>
-        <p className="text-xs text-gray-500 mb-4">
+      <section>
+        <h3 style={{ margin: '0 0 var(--space-1)' }}>Net Worth Projection</h3>
+        <p className="text-muted" style={{ margin: '0 0 var(--space-4)', fontSize: '13px' }}>
           Based on {formatCurrency(monthlySurplus)}/mo surplus accumulating over time
         </p>
         <div className="h-72">
@@ -94,18 +99,18 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
             <AreaChart data={netWorthData}>
               <defs>
                 <linearGradient id="netWorthGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#0088b0" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#0088b0" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis
                 dataKey="label"
-                stroke="#6b7280"
+                stroke="#605d5d"
                 tick={{ fontSize: 11 }}
                 interval={tickInterval - 1}
               />
               <YAxis
-                stroke="#6b7280"
+                stroke="#605d5d"
                 tick={{ fontSize: 11 }}
                 tickFormatter={(v: number) => v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v}`}
               />
@@ -113,24 +118,24 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
                 {...TOOLTIP_STYLE}
                 formatter={(value) => [formatCurrency(Number(value)), 'Net Worth']}
               />
-              <ReferenceLine y={0} stroke="#374151" strokeDasharray="3 3" />
+              <ReferenceLine y={0} stroke="#bab6b6" strokeDasharray="3 3" />
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#10b981"
+                stroke="#0088b0"
                 strokeWidth={2}
                 fill="url(#netWorthGrad)"
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </section>
 
       {/* Debt Payoff Timeline */}
       {debts.length > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-1">Debt Payoff Timeline</h2>
-          <p className="text-xs text-gray-500 mb-4">
+        <section>
+          <h3 style={{ margin: '0 0 var(--space-1)' }}>Debt Payoff Timeline</h3>
+          <p className="text-muted" style={{ margin: '0 0 var(--space-4)', fontSize: '13px' }}>
             Avalanche strategy with {formatCurrency(Math.max(0, monthlySurplus))}/mo extra payments
           </p>
           <div className="h-72">
@@ -138,18 +143,18 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
               <AreaChart data={debtResult.data}>
                 <defs>
                   <linearGradient id="debtGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#d6006c" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#d6006c" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis
                   dataKey="label"
-                  stroke="#6b7280"
+                  stroke="#605d5d"
                   tick={{ fontSize: 11 }}
                   interval={tickInterval - 1}
                 />
                 <YAxis
-                  stroke="#6b7280"
+                  stroke="#605d5d"
                   tick={{ fontSize: 11 }}
                   tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
                 />
@@ -160,21 +165,21 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
                 <Area
                   type="monotone"
                   dataKey="balance"
-                  stroke="#ef4444"
+                  stroke="#d6006c"
                   strokeWidth={2}
                   fill="url(#debtGrad)"
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </section>
       )}
 
       {/* Savings Goal Projections */}
       {savingsResult.goalNames.length > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-1">Savings Goal Projections</h2>
-          <p className="text-xs text-gray-500 mb-4">
+        <section>
+          <h3 style={{ margin: '0 0 var(--space-1)' }}>Savings Goal Projections</h3>
+          <p className="text-muted" style={{ margin: '0 0 var(--space-4)', fontSize: '13px' }}>
             Surplus split equally across {savingsResult.goalNames.length} active goal{savingsResult.goalNames.length > 1 ? 's' : ''}
           </p>
           <div className="h-72">
@@ -182,12 +187,12 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
               <LineChart data={savingsResult.data}>
                 <XAxis
                   dataKey="label"
-                  stroke="#6b7280"
+                  stroke="#605d5d"
                   tick={{ fontSize: 11 }}
                   interval={tickInterval - 1}
                 />
                 <YAxis
-                  stroke="#6b7280"
+                  stroke="#605d5d"
                   tick={{ fontSize: 11 }}
                   tickFormatter={(v: number) => v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v}`}
                 />
@@ -195,7 +200,7 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
                   {...TOOLTIP_STYLE}
                   formatter={(value, name) => [formatCurrency(Number(value)), String(name)]}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ color: '#201e1d', fontSize: 13 }} />
                 {savingsResult.goalNames.map((name, i) => (
                   <Line
                     key={name}
@@ -209,7 +214,7 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </section>
       )}
     </div>
   )

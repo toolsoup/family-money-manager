@@ -9,27 +9,50 @@ export default async function DocumentsPage() {
   const totalSize = documents.reduce((sum, d) => sum + d.file_size, 0)
   const categoryCount = new Set(documents.map((d) => d.category)).size
 
-  return (
-    <div>
-      <h1 className="text-3xl font-bold text-white mb-2">Documents</h1>
-      <p className="text-gray-400 mb-8">Store and organize your financial documents.</p>
+  const stats = [
+    { label: 'Total Documents', value: String(totalCount) },
+    { label: 'Categories Used', value: String(categoryCount) },
+    { label: 'Total Storage', value: formatFileSize(totalSize) },
+  ]
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Total Documents</p>
-          <p className="text-2xl font-bold text-white">{totalCount}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Categories Used</p>
-          <p className="text-2xl font-bold text-white">{categoryCount}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p className="text-sm text-gray-400 mb-1">Total Storage</p>
-          <p className="text-2xl font-bold text-white">{formatFileSize(totalSize)}</p>
-        </div>
+  return (
+    <div
+      className="sheet"
+      style={{
+        maxWidth: '1180px',
+        margin: '0 auto',
+        padding: 'var(--space-6) var(--space-8) var(--space-8)',
+      }}
+    >
+      <h1 style={{ margin: '0 0 var(--space-2)' }}>Documents</h1>
+      <p className="text-muted" style={{ marginBottom: 'var(--space-8)' }}>
+        Store and organize your financial documents.
+      </p>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gap: 'var(--space-6)',
+          alignItems: 'start',
+        }}
+      >
+        {stats.map((s) => (
+          <div key={s.label}>
+            <h6 className="text-muted" style={{ margin: '0 0 var(--space-2)' }}>{s.label}</h6>
+            <p
+              className="tnum"
+              style={{ margin: 0, fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '28px' }}
+            >
+              {s.value}
+            </p>
+          </div>
+        ))}
       </div>
 
-      <DocumentList documents={documents} />
+      <div style={{ marginTop: 'var(--space-8)' }}>
+        <DocumentList documents={documents} />
+      </div>
     </div>
   )
 }

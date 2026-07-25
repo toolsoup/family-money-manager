@@ -43,65 +43,68 @@ export function ConnectedAccounts({ items, accounts, isPlaidConfigured }: Props)
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-white">Connected Accounts</h2>
-      </div>
+    <section style={{ marginTop: 'var(--space-8)' }}>
+      <h3 style={{ margin: '0 0 var(--space-3)' }}>Connected Accounts</h3>
 
       {items.length === 0 ? (
-        <div className="mb-4">
-          <p className="text-gray-500 text-sm mb-4">
-            No bank accounts connected yet. Link a bank to automatically sync balances.
-          </p>
-        </div>
+        <p className="text-muted" style={{ maxWidth: '40rem', marginBottom: 'var(--space-4)' }}>
+          No bank accounts connected yet. Link a bank to automatically sync balances.
+        </p>
       ) : (
-        <div className="space-y-4 mb-4">
+        <div className="flex flex-col" style={{ gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
           {items.map((item) => {
             const itemAccounts = accounts.filter((a) => a.plaid_item_id === item.id)
 
             return (
               <div
                 key={item.id}
-                className={`bg-gray-800/50 border border-gray-700 rounded-lg p-4 ${
-                  deletingId === item.id ? 'opacity-50' : ''
-                }`}
+                className="card"
+                style={deletingId === item.id ? { opacity: 0.5 } : undefined}
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between" style={{ gap: 'var(--space-3)' }}>
                   <div>
-                    <h3 className="text-white font-medium text-sm">
+                    <p className="card-title" style={{ margin: 0 }}>
                       {item.institution_name ?? 'Connected Institution'}
-                    </h3>
-                    <p className="text-gray-500 text-xs">
+                    </p>
+                    <p className="text-muted" style={{ margin: '2px 0 0', fontSize: '12px' }}>
                       Last synced: {formatDate(item.last_synced_at)}
                     </p>
                   </div>
                   <button
                     onClick={() => handleDisconnect(item.id, item.institution_name)}
                     disabled={isPending}
-                    className="text-gray-500 hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-gray-700 transition-colors cursor-pointer"
+                    className="btn btn-danger"
                   >
                     Disconnect
                   </button>
                 </div>
 
                 {itemAccounts.length > 0 && (
-                  <div className="divide-y divide-gray-700">
+                  <div>
                     {itemAccounts.map((acct) => (
-                      <div key={acct.id} className="flex items-center justify-between py-2">
+                      <div
+                        key={acct.id}
+                        className="flex items-center justify-between"
+                        style={{
+                          gap: 'var(--space-3)',
+                          padding: 'var(--space-2) 0',
+                          borderTop: '1px solid var(--color-divider)',
+                        }}
+                      >
                         <div>
-                          <p className="text-white text-sm">{acct.name}</p>
-                          <p className="text-gray-500 text-xs">
+                          <p style={{ margin: 0 }}>{acct.name}</p>
+                          <p className="text-muted" style={{ margin: 0, fontSize: '12px' }}>
                             {acct.type}{acct.subtype ? ` · ${acct.subtype}` : ''}
                           </p>
                         </div>
-                        <div className="text-right">
+                        <div style={{ textAlign: 'right' }}>
                           {acct.balance_current != null && (
-                            <p className="text-white text-sm font-medium">
+                            <p className="tnum" style={{ margin: 0, fontFamily: 'var(--font-heading)', fontWeight: 600 }}>
                               {formatCurrency(acct.balance_current)}
                             </p>
                           )}
                           {acct.balance_available != null && (
-                            <p className="text-gray-500 text-xs">
+                            <p className="text-muted tnum" style={{ margin: 0, fontSize: '12px' }}>
                               Available: {formatCurrency(acct.balance_available)}
                             </p>
                           )}
@@ -117,6 +120,6 @@ export function ConnectedAccounts({ items, accounts, isPlaidConfigured }: Props)
       )}
 
       <PlaidLinkButton isConfigured={isPlaidConfigured} />
-    </div>
+    </section>
   )
 }

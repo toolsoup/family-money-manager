@@ -45,73 +45,73 @@ export function SavingsGoalsList({ goals, monthlySurplus }: Props) {
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl">
-      <div className="flex items-center justify-between p-6 border-b border-gray-800">
-        <h2 className="text-lg font-semibold text-white">Savings Goals</h2>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer"
-        >
-          + Add Goal
+    <section>
+      <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-3)' }}>
+        <h3 style={{ margin: 0 }}>Savings goals</h3>
+        <button onClick={() => setShowAdd(true)} className="btn btn-secondary" type="button">
+          + Add goal
         </button>
       </div>
 
       {goals.length === 0 ? (
-        <p className="p-6 text-gray-500 text-sm">No savings goals yet. Click + Add Goal to set a target.</p>
+        <p className="text-muted" style={{ fontSize: '14px' }}>
+          No savings goals yet. Click + Add goal to set a target.
+        </p>
       ) : (
-        <div className="divide-y divide-gray-800">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: 'var(--space-4)',
+          }}
+        >
           {goals.map((goal) => {
+            const reached = goal.target_amount > 0 && goal.current_amount >= goal.target_amount
             const progress = goal.target_amount > 0
               ? Math.min(100, (goal.current_amount / goal.target_amount) * 100)
               : 0
 
             return (
-              <div
-                key={goal.id}
-                className={`p-4 px-6 ${deletingId === goal.id ? 'opacity-50' : ''}`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <p className="text-white text-sm font-medium">{goal.name}</p>
+              <div key={goal.id} className="card" style={{ opacity: deletingId === goal.id ? 0.5 : 1 }}>
+                <div className="flex items-start justify-between" style={{ gap: 'var(--space-3)' }}>
+                  <div className="min-w-0">
+                    <p className="card-title truncate">{goal.name}</p>
                     {goal.deadline && (
-                      <p className="text-gray-500 text-xs mt-0.5">
+                      <p className="text-muted tnum" style={{ margin: '2px 0 0', fontSize: '12px' }}>
                         Target: {new Date(goal.deadline).toLocaleDateString()}
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <p className="text-white text-sm font-medium">
-                        {formatCurrency(goal.current_amount)} / {formatCurrency(goal.target_amount)}
-                      </p>
-                      <p className="text-gray-500 text-xs">
-                        {monthlySurplus > 0 ? `~${monthsToGoal(goal)} at current surplus` : ''}
-                      </p>
-                    </div>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => setEditingGoal(goal)}
-                        className="text-gray-500 hover:text-white text-xs px-2 py-1 rounded hover:bg-gray-800 transition-colors cursor-pointer"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(goal.id)}
-                        disabled={isPending}
-                        className="text-gray-500 hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-gray-800 transition-colors cursor-pointer"
-                      >
-                        Delete
-                      </button>
-                    </div>
+                  <div className="flex" style={{ gap: '2px' }}>
+                    <button onClick={() => setEditingGoal(goal)} className="btn btn-ghost" type="button">
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(goal.id)}
+                      disabled={isPending}
+                      className="btn btn-danger"
+                      type="button"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
-                <div className="w-full bg-gray-800 rounded-full h-2">
-                  <div
-                    className="bg-blue-500 h-2 rounded-full transition-all"
-                    style={{ width: `${progress}%` }}
-                  />
+
+                <p className="tnum" style={{ margin: 0, fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '18px' }}>
+                  {formatCurrency(goal.current_amount)}
+                  <span className="text-muted" style={{ fontWeight: 400, fontSize: '14px' }}>
+                    {' '}/ {formatCurrency(goal.target_amount)}
+                  </span>
+                </p>
+
+                <div className="meter">
+                  <i className={reached ? '' : 'mute'} style={{ width: `${progress}%` }} />
                 </div>
-                <p className="text-gray-500 text-xs mt-1">{progress.toFixed(0)}% complete</p>
+
+                <div className="flex items-baseline justify-between text-muted" style={{ fontSize: '12px' }}>
+                  <span className="tnum">{progress.toFixed(0)}% complete</span>
+                  {monthlySurplus > 0 && <span>~{monthsToGoal(goal)} at current surplus</span>}
+                </div>
               </div>
             )
           })}
@@ -128,6 +128,6 @@ export function SavingsGoalsList({ goals, monthlySurplus }: Props) {
         open={!!editingGoal}
         onClose={() => setEditingGoal(null)}
       />
-    </div>
+    </section>
   )
 }
