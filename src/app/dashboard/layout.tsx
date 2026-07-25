@@ -16,20 +16,21 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'var(--color-neutral-300)' }}>
+    <div className="min-h-screen flex">
       <Sidebar user={user} />
-      <main className="flex-1 overflow-auto" style={{ padding: 'var(--space-6)' }}>
+      <main className="flex-1 overflow-auto" style={{ padding: 'var(--space-8) var(--space-6)' }}>
         {children}
       </main>
       <Toaster
+        theme="dark"
         position="bottom-right"
         toastOptions={{
           style: {
-            background: 'var(--color-bg)',
-            border: '1px solid var(--color-divider)',
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border-strong)',
             color: 'var(--color-text)',
             fontFamily: 'var(--font-body)',
-            boxShadow: 'var(--shadow-md)',
+            boxShadow: 'var(--shadow-lg)',
           },
         }}
       />

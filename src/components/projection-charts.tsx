@@ -25,21 +25,21 @@ const TIMEFRAME_LABELS: Record<ProjectionTimeframe, string> = {
   10: '10 Years',
 }
 
-// Broadsheet palette — cyan and magenta lead, neutrals fill the rest.
+// Midnight Gold palette — gold leads, distinct hues for the goal lines.
 const GOAL_COLORS = [
-  '#0088b0', '#d6006c', '#9b9797', '#605d5d',
-  '#bab6b6', '#38a6cf', '#004961', '#790e3d',
+  '#f5a623', '#34d399', '#60a5fa', '#a78bfa',
+  '#22d3ee', '#fb7185', '#facc15', '#f472b6',
 ]
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: '#f3f2f2',
-    border: '1px solid #d7d3d3',
+    background: '#1c1f28',
+    border: '1px solid #2a3040',
     borderRadius: 2,
-    color: '#201e1d',
+    color: '#f4f5f7',
     fontFamily: 'var(--font-body)',
   },
-  labelStyle: { color: '#605d5d' },
+  labelStyle: { color: '#9aa1ae' },
 }
 
 interface Props {
@@ -99,18 +99,18 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
             <AreaChart data={netWorthData}>
               <defs>
                 <linearGradient id="netWorthGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0088b0" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#0088b0" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#f5a623" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#f5a623" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis
                 dataKey="label"
-                stroke="#605d5d"
+                stroke="#9aa1ae"
                 tick={{ fontSize: 11 }}
                 interval={tickInterval - 1}
               />
               <YAxis
-                stroke="#605d5d"
+                stroke="#9aa1ae"
                 tick={{ fontSize: 11 }}
                 tickFormatter={(v: number) => v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v}`}
               />
@@ -118,11 +118,11 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
                 {...TOOLTIP_STYLE}
                 formatter={(value) => [formatCurrency(Number(value)), 'Net Worth']}
               />
-              <ReferenceLine y={0} stroke="#bab6b6" strokeDasharray="3 3" />
+              <ReferenceLine y={0} stroke="#3a4150" strokeDasharray="3 3" />
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#0088b0"
+                stroke="#f5a623"
                 strokeWidth={2}
                 fill="url(#netWorthGrad)"
               />
@@ -143,18 +143,18 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
               <AreaChart data={debtResult.data}>
                 <defs>
                   <linearGradient id="debtGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#d6006c" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#d6006c" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#fb7185" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#fb7185" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis
                   dataKey="label"
-                  stroke="#605d5d"
+                  stroke="#9aa1ae"
                   tick={{ fontSize: 11 }}
                   interval={tickInterval - 1}
                 />
                 <YAxis
-                  stroke="#605d5d"
+                  stroke="#9aa1ae"
                   tick={{ fontSize: 11 }}
                   tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
                 />
@@ -165,7 +165,7 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
                 <Area
                   type="monotone"
                   dataKey="balance"
-                  stroke="#d6006c"
+                  stroke="#fb7185"
                   strokeWidth={2}
                   fill="url(#debtGrad)"
                 />
@@ -187,12 +187,12 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
               <LineChart data={savingsResult.data}>
                 <XAxis
                   dataKey="label"
-                  stroke="#605d5d"
+                  stroke="#9aa1ae"
                   tick={{ fontSize: 11 }}
                   interval={tickInterval - 1}
                 />
                 <YAxis
-                  stroke="#605d5d"
+                  stroke="#9aa1ae"
                   tick={{ fontSize: 11 }}
                   tickFormatter={(v: number) => v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v}`}
                 />
@@ -200,7 +200,7 @@ export function ProjectionCharts({ currentNetWorth, monthlySurplus, debts, savin
                   {...TOOLTIP_STYLE}
                   formatter={(value, name) => [formatCurrency(Number(value)), String(name)]}
                 />
-                <Legend wrapperStyle={{ color: '#201e1d', fontSize: 13 }} />
+                <Legend wrapperStyle={{ color: '#f4f5f7', fontSize: 13 }} />
                 {savingsResult.goalNames.map((name, i) => (
                   <Line
                     key={name}

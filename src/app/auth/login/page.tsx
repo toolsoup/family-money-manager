@@ -16,7 +16,7 @@ export default function LoginPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center"
-      style={{ background: 'var(--color-bg)', padding: 'var(--space-4)' }}
+      style={{ background: 'transparent', padding: 'var(--space-4)' }}
     >
       <div
         className="sheet"

@@ -4,11 +4,11 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recha
 import { formatCurrency } from '@/lib/format'
 import type { CategoryBreakdown } from '@/lib/cash-flow-calculator'
 
-// Broadsheet palette: cyan lead, magenta second, neutrals for the long tail.
+// Midnight Gold categorical palette — gold-led, distinct hues, all readable on dark.
 const COLORS = [
-  '#0088b0', '#d6006c', '#9b9797', '#605d5d', '#bab6b6',
-  '#38a6cf', '#004961', '#790e3d', '#444141', '#d7d3d3',
-  '#006786', '#aa0b56', '#7d7979', '#62c5ee',
+  '#f5a623', '#34d399', '#60a5fa', '#fb7185', '#a78bfa',
+  '#22d3ee', '#f472b6', '#facc15', '#4ade80', '#93c5fd',
+  '#fca5a5', '#c4b5fd', '#5eead4', '#fbbf24',
 ]
 
 interface Props {
@@ -36,7 +36,7 @@ export function CategoryChart({ data, title }: Props) {
               dataKey="value"
               label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
               labelLine={false}
-              stroke="#f3f2f2"
+              stroke="#1c1f28"
             >
               {chartData.map((_, i) => (
                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
@@ -44,15 +44,15 @@ export function CategoryChart({ data, title }: Props) {
             </Pie>
             <Tooltip
               contentStyle={{
-                background: '#f3f2f2',
-                border: '1px solid #d7d3d3',
+                background: '#1c1f28',
+                border: '1px solid #2a3040',
                 borderRadius: 2,
-                color: '#201e1d',
+                color: '#f4f5f7',
                 fontFamily: 'var(--font-body)',
               }}
               formatter={(value) => [formatCurrency(Number(value)), 'Monthly']}
             />
-            <Legend wrapperStyle={{ color: '#201e1d', fontFamily: 'var(--font-body)', fontSize: 12 }} />
+            <Legend wrapperStyle={{ color: '#f4f5f7', fontFamily: 'var(--font-body)', fontSize: 12 }} />
           </PieChart>
         </ResponsiveContainer>
       </div>

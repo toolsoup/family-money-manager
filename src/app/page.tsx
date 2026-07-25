@@ -11,7 +11,7 @@ export default async function Home() {
   }
 
   return (
-    <main style={{ background: 'var(--color-bg)', minHeight: '100vh' }}>
+    <main style={{ background: 'transparent', minHeight: '100vh' }}>
       <div
         className="sheet"
         style={{

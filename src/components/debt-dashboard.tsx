@@ -15,12 +15,12 @@ import {
 } from 'recharts'
 
 const STRATEGY_COLORS: Record<PayoffStrategyType, string> = {
-  avalanche: '#0088b0',
-  snowball: '#d6006c',
-  hybrid: '#38a6cf',
-  highest_payment: '#605d5d',
-  custom: '#9b9797',
-  minimum_only: '#bab6b6',
+  avalanche: '#f5a623',
+  snowball: '#fb7185',
+  hybrid: '#34d399',
+  highest_payment: '#9aa1ae',
+  custom: '#94a3b8',
+  minimum_only: '#3a4150',
 }
 
 const STRATEGY_DESCRIPTIONS: Record<PayoffStrategyType, string> = {
@@ -186,18 +186,18 @@ export function DebtDashboard({ debts }: Props) {
             <LineChart data={chartData}>
               <XAxis
                 dataKey="month"
-                stroke="#605d5d"
-                tick={{ fontSize: 11, fill: '#605d5d' }}
-                label={{ value: 'Months', position: 'insideBottom', offset: -5, fill: '#605d5d', fontSize: 11 }}
+                stroke="#9aa1ae"
+                tick={{ fontSize: 11, fill: '#9aa1ae' }}
+                label={{ value: 'Months', position: 'insideBottom', offset: -5, fill: '#9aa1ae', fontSize: 11 }}
               />
               <YAxis
-                stroke="#605d5d"
-                tick={{ fontSize: 11, fill: '#605d5d' }}
+                stroke="#9aa1ae"
+                tick={{ fontSize: 11, fill: '#9aa1ae' }}
                 tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
               />
               <Tooltip
-                contentStyle={{ background: '#f3f2f2', border: '1px solid #d7d3d3', color: '#201e1d', fontFamily: 'var(--font-body)' }}
-                labelStyle={{ color: '#605d5d' }}
+                contentStyle={{ background: '#1c1f28', border: '1px solid #2a3040', color: '#f4f5f7', fontFamily: 'var(--font-body)' }}
+                labelStyle={{ color: '#9aa1ae' }}
                 formatter={(value, name) => [
                   formatCurrency(Number(value)),
                   result.strategies.find((s) => s.strategy === name)?.label ?? String(name),
