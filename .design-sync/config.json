@@ -1,0 +1,18 @@
+{
+  "pkg": "fmm-design-system",
+  "globalName": "FMMDesign",
+  "projectId": "c34bc06e-4188-46a5-85ea-642f008d5c9f",
+  "shape": "package",
+  "cssEntry": "styles/globals.css",
+  "provider": { "component": "Canvas", "props": { "padded": false } },
+  "readmeHeader": ".design-sync/conventions.md",
+  "overrides": {
+    "Dialog": { "cardMode": "single", "viewport": "520x600" },
+    "Canvas": { "cardMode": "single", "viewport": "760x420" },
+    "Table": { "cardMode": "column" },
+    "Nav": { "cardMode": "column" },
+    "Sheet": { "cardMode": "column" },
+    "Field": { "cardMode": "column" },
+    "Textarea": { "cardMode": "column" }
+  }
+}
