@@ -31,5 +31,10 @@
   if the app theme changes. Re-run the strip+prepend generation on any re-sync.
 - The wrapper components in `.design-sync/ds-lib/src/` are hand-written adapters; if the app adds
   new `globals.css` classes/tokens, add matching wrappers so the DS stays complete.
-- Components are all in a single `general` group (no per-component docs authored). Grouping/prompt
-  docs can be added later via `cfg.docsMap` stubs with real bodies.
+
+## Grouping + per-component docs
+- Components are grouped via `cfg.docsDir: "docs"` → `.design-sync/ds-lib/docs/<Name>.md`. Each doc's
+  frontmatter `category:` sets the group (Actions/Forms/Data/Content/Layout/Overlays; the converter
+  lowercases them to the folder/`@dsCard` slug) AND its body becomes the component's `.prompt.md`.
+- A NEW component needs a matching `docs/<Name>.md` (frontmatter category + real usage body), or it
+  falls back to group `general` with a synthesized prompt. Keep the doc body accurate to the API.

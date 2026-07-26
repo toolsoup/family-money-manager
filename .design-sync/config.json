@@ -4,6 +4,7 @@
   "projectId": "c34bc06e-4188-46a5-85ea-642f008d5c9f",
   "shape": "package",
   "cssEntry": "styles/globals.css",
+  "docsDir": "docs",
   "provider": { "component": "Canvas", "props": { "padded": false } },
   "readmeHeader": ".design-sync/conventions.md",
   "overrides": {
